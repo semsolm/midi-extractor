@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Environments
+.env
+.env.*
+instance/
+
+# Dependencies
+node_modules/
+*.egg-info/
+
+# Frontend Build Artifacts
+/frontend/build/
+/frontend/.pnp.*
+
+# IDE & Editor Configurations
+.idea/
+.vscode/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Project-specific Generated Files
+uploads/
+results/
+
+# AI Modeling Outputs
+/backend/modeling/outputs/
+/backend/modeling/data/
+
+# Log files
+*.log

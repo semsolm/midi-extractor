@@ -21,7 +21,7 @@ def start_background_task(job_id, audio_path):
     from app.services.audio_processor import run_processing_pipeline
 
     # Flask의 애플리케이션 컨텍스트를 스레드 내에서 사용 가능하게 합니다.
-    from run import app
+    from backend.run import app
 
     def task_with_context():
         with app.app_context():
