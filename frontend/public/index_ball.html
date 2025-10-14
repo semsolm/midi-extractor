@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>다운로드 템플릿(원형 로딩) - 웹사이트 스타일</title>
+    <style>
+
+        /* 1. 기본 및 배경 스타일 */
+        body {
+            font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* 부드러운 그라데이션 배경 추가 */
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%); 
+            color: #343a40;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* 2. 메인 컨테이너 스타일 */
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 16px; /* 더 둥근 모서리 */
+            /* 더 부드럽고 입체적인 그림자 */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
+            width: 90%;
+            max-width: 400px; /* 컨테이너 폭 약간 줄임 */
+            text-align: center;
+            /* Transition for subtle effect */
+            transition: transform 0.3s ease; 
+        }
+        .container:hover {
+            transform: translateY(-3px); /* 마우스 오버 시 살짝 떠오르는 효과 */
+        }
+
+        /* 3. 이미지 스타일 */
+        .container img {
+            max-width: 120px; /* 이미지 크기 축소 */
+            height: auto;
+            margin-bottom: 25px; /* 여백 조정 */
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 8px;
+        }
+
+        /* 4. 헤더 스타일 */
+        h1 {
+            color: #1f2937; /* 진한 회색 */
+            margin-bottom: 8px;
+            font-size: 1.6em; /* 폰트 크기 조정 */
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        /* 5. 입력 그룹 */
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .input-group label {
+            font-weight: 500;
+            color: #4b5563;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="file"] {
+            margin-top: 0;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #f9fafb;
+            cursor: pointer;
+        }
+
+        /* 6. 버튼 스타일 */
+        .controls {
+            margin: 0 auto 30px auto; /* 하단 여백 증가 */
+            width: 100%;
+            /* 버튼 너비를 컨테이너에 맞춰 꽉 채우도록 유지 */
+            max-width: 100%; 
+        }
+
+        .controls button {
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            transition: background-color 0.2s ease-in-out, transform 0.1s;
+            width: 100%;
+            font-weight: 600;
+        }
+
+        #startButton {
+            background-color: #4f46e5; /* 주요 버튼 색상 변경 (보라색 계열) */
+            color: white;
+            box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
+        }
+
+        #startButton:hover:not(:disabled) {
+            background-color: #4338ca;
+            transform: translateY(-1px);
+        }
+
+        .controls button:disabled {
+            background-color: #e5e7eb;
+            color: #9ca3af;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* --- 7. 로딩 스피너 CSS --- */
+        #spinnerContainer {
+            display: none;
+            margin: 30px auto;
+            min-height: 50px; /* 높이 조정 */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loader {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #4f46e5; /* 스피너 색상 통일 */
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 기존 로딩바 요소는 숨김 */
+        #myProgress, #digit {
+            display: none;
+        }
+
+        /* 8. 상태 메시지 영역 */
+        #statusMessageElement {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px; /* 둥근 모서리 */
+            font-weight: 500;
+            text-align: center;
+            border: 1px solid #dee2e6;
+            min-height: 20px;
+        }
+
+        /* 상태별 색상 (현대적인 색상으로 변경) */
+        .status-success {
+            background-color: #d1fae5; /* 연한 녹색 */
+            color: #065f46;
+            border-color: #a7f3d0;
+        }
+
+        .status-error {
+            background-color: #fee2e2; /* 연한 빨강 */
+            color: #991b1b;
+            border-color: #fecaca;
+        }
+
+        .status-info {
+            background-color: #e0f2fe; /* 연한 파랑 */
+            color: #0369a1;
+            border-color: #bae6fd;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <img src="drummer.png" alt="드럼 치는 사람">
+
+        <h1>드럼 사운드 자동 분류 및 악보 생성 시스템</h1>
+        <p class="subtitle">파일 전송 후 로딩 완료시 다운로드가 시작됩니다.</p>
+
+        <div class="input-group">
+            <label for="fileInput">변환할 파일 선택:</label>
+            <input type="file" id="fileInput" name="file" accept=".txt, text/plain">
+        </div>
+
+        <div class="controls">
+            <button id="startButton" onclick="startProcess()">변환 시작</button>
+        </div>
+
+        <div id="spinnerContainer">
+            <div class="loader"></div>
+        </div>
+
+        <p id="digit">파일을 업로드해주세요</p>
+        <div id="myProgress">
+            <div id="myBar">0%</div>
+        </div>
+
+        <div id="statusMessageElement" class="status-info">파일을 선택하고 '변환 시작'을 눌러주세요.</div>
+    </div>
+
+    <script>
+        // --- 1. 전역 변수 설정 ---
+        const API_URL = 'http://127.0.0.1:5000/api/download_modified';
+        const VIRTUAL_WAIT_SECONDS = 5; // 서버 응답 후 보여줄 가상 로딩 시간 (5초)
+
+        let isProcessing = false;
+        let downloadBlob = null;
+        let downloadFilename = '';
+
+        // --- 2. DOM 요소 설정 ---
+        const fileInput = document.getElementById('fileInput');
+        const startButton = document.getElementById('startButton');
+        const statusMessageElement = document.getElementById('statusMessageElement');
+        const spinnerContainer = document.getElementById('spinnerContainer');
+
+        // --- 3. 상태 메시지 업데이트 헬퍼 함수 ---
+        function updateStatus(message, type = 'info') {
+            statusMessageElement.innerText = message;
+            statusMessageElement.className = `status-${type}`;
+        }
+
+        // --- 4. 파일 전송 및 서버 응답 받기 (Phase 1) ---
+        function sendFileToServer(file) {
+            updateStatus(`파일을 서버로 전송하고 수정 요청 중...`, 'info'); 
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            return fetch(API_URL, {
+                method: 'POST',
+                body: formData,
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw new Error(`[HTTP ${response.status}] 서버 오류: ${err.error || '알 수 없는 오류'}`);
+                        });
+                    }
+
+                    const disposition = response.headers.get('Content-Disposition') || response.headers.get('content-disposition');
+                    const filenameMatch = disposition ? disposition.split('filename=')[1] : null;
+                    const filename = filenameMatch ? filenameMatch.replace(/\"/g, '') : 'download_modified.txt';
+
+                    return response.blob().then(blob => ({ blob, filename }));
+                });
+        }
+
+        // --- 5. 타이머 완료 후 다운로드 실행 (Phase 3) ---
+        function finalizeDownload() {
+            if (!downloadBlob) {
+                updateStatus('❌ 다운로드 실패: 서버 응답 데이터가 없습니다.', 'error');
+                resetUI();
+                return;
+            }
+
+            spinnerContainer.style.display = 'none';
+
+            updateStatus(`✅ 변환이 완료되었습니다! 다운로드가 시작됩니다.`, 'success'); 
+            
+            const url = window.URL.createObjectURL(downloadBlob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = downloadFilename; 
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+
+            setTimeout(resetUI, 1500);
+        }
+
+
+        // --- 6. 전체 프로세스 시작 (버튼 클릭 시) ---
+        function startProcess() {
+            if (isProcessing) return;
+
+            const selectedFile = fileInput.files[0];
+
+            if (!selectedFile) {
+                alert('파일을 먼저 선택해주세요.');
+                return;
+            }
+
+            isProcessing = true;
+            startButton.disabled = true;
+            startButton.innerText = '전송 중...';
+            downloadBlob = null;
+            downloadFilename = '';
+            
+            spinnerContainer.style.display = 'flex';
+            
+            // 1단계: 파일 서버 전송 시작
+            sendFileToServer(selectedFile)
+                .then(({ blob, filename }) => {
+                    downloadBlob = blob;
+                    downloadFilename = filename;
+
+                    updateStatus(`서버 응답 확인! 최종 처리 중...`, 'info');
+
+                    // 2단계: 가상 로딩 시간(5초) 대기 후 다운로드 실행
+                    setTimeout(() => {
+                        finalizeDownload();
+                    }, VIRTUAL_WAIT_SECONDS * 1000); 
+                })
+                .catch(error => {
+                    console.error('서버 전송 중 오류:', error);
+                    updateStatus(`❌ 서버 전송 실패: ${error.message}`, 'error');
+                    resetUI();
+                });
+        }
+
+        // --- 7. UI 초기화 ---
+        function resetUI() {
+            isProcessing = false;
+
+            startButton.disabled = false;
+            startButton.innerText = `변환 시작`;
+
+            spinnerContainer.style.display = 'none';
+
+            downloadBlob = null;
+            downloadFilename = '';
+
+            updateStatus("파일을 선택하고 '변환 시작'을 눌러주세요.", 'info');
+        }
+
+        document.addEventListener('DOMContentLoaded', resetUI);
+    </script>
+</body>
+
+</html>
