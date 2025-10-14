@@ -1,3 +1,31 @@
+## modeling 폴더 구조
+___
+```
+backend/
+└── modeling/             # --- 🔬 AI 모델 개발 및 실험 폴더 ---
+    ├── data/             # --- 💾 데이터 관리 ---
+    │   ├── raw/          # 원본 데이터 (Kaggle, 직접 녹음한 wav 파일 등)
+    │   ├── processed/    # 전처리된 데이터 (노이즈 제거, 길이 통일 등)
+    │   └── features/     # 특징 벡터로 변환된 데이터 (.npy, .csv 등)
+    │
+    ├── notebooks/        # --- 📝 데이터 탐색 및 실험용 노트북 ---
+    │   ├── 1_data_exploration.ipynb  # EDA 및 데이터 시각화
+    │   └── 2_model_prototyping.ipynb # 모델 구조 프로토타이핑
+    │
+    ├── src/              # --- ⚙️ 재사용 가능한 소스 코드 ---
+    │   ├── __init__.py
+    │   ├── data_utils.py # 데이터 로드, 증강, 전처리 함수
+    │   └── features.py   # 특징 벡터 추출 함수 (model_train.py의 함수 분리)
+    │
+    ├── scripts/          # --- ▶️ 실행 스크립트 ---
+    │   ├── train.py      # 모델 학습 스크립트 (기존 model_train.py 역할)
+    │   └── evaluate.py   # 학습된 모델 성능 평가 스크립트
+    │
+    └── outputs/          # --- 📤 결과물 저장 ---
+        ├── models/       # 학습된 모델 파일 (.pkl, .h5 등)
+        └── reports/      # 성능 평가 결과 (혼동 행렬 이미지, 정확도 리포트 등)
+
+```
 ## 각 폴더의 역할
 ___
 * **```data/```: 모든 데이터의 생명주기를 관리하는 가장 중요한 폴더입니다.**

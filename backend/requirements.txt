@@ -1,0 +1,16 @@
+# Flask Web Framework
+flask==3.0.3
+
+# Scientific Computing (Python 3.10 compatible)
+numpy==1.26.4
+
+# Audio and Music Processing
+librosa==0.11.0
+pretty_midi==0.2.11
+
+# Model Persistence & Machine Learning
+joblib==1.4.2
+scikit-learn==1.5.0
+
+# Audio Source Separation (for drum extraction)
+demucs==4.0.1
