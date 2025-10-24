@@ -1,5 +1,6 @@
-# Python
-__pycache__/
+Python
+
+pycache/
 *.pyc
 *.pyo
 *.pyd
@@ -8,34 +9,48 @@ env/
 venv/
 .venv/
 
-# Environments
+Environments
+
 .env
 .env.*
 instance/
 
-# Dependencies
+Dependencies
+
 node_modules/
 *.egg-info/
 
-# Frontend Build Artifacts
+Frontend Build Artifacts
+
 /frontend/build/
 /frontend/.pnp.*
 
-# IDE & Editor Configurations
+IDE & Editor Configurations
+
 .idea/
 .vscode/
 
-# OS-specific files
+OS-specific files
+
 .DS_Store
 Thumbs.db
 
-# Project-specific Generated Files
+Project-specific Generated Files
+
 uploads/
 results/
 
-# AI Modeling Outputs
+AI Modeling Outputs
+
 /backend/modeling/outputs/
 /backend/modeling/data/
 
-# Log files
+Log files
+
 *.log
+
+--- [추가] MLflow 데이터 폴더 제외 ---
+
+mlruns/
+
+---

@@ -42,7 +42,7 @@ def audio_to_melspectrogram(filepath, target_shape=(N_MELS, N_MELS)):
 def load_processed_data(data_dir):
     """전처리된 스펙트로그램 데이터를 불러오는 함수."""
     X, y = [], []
-    labels = {"kick": 0, "snare": 1, "hi-hat": 2}  # 클래스 추가
+    labels = {"kick": 0, "snare": 1, "toms": 2, "overheads": 3}  # 클래스 추가
 
     for label, num in labels.items():
         class_path = os.path.join(data_dir, label)
