@@ -10,8 +10,10 @@ class Config:
     UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
     RESULT_FOLDER = os.path.join(BASE_DIR, 'results')
 
-    # AI 모델 파일 경로
-    MODEL_PATH = os.path.join(BASE_DIR, 'models', 'kick_snare_lr.pkl')
+    # AI 모델 파일 경로 (.pkl -> .keras)
+    # MODEL_PATH = os.path.join(BASE_DIR, 'models', 'kick_snare_lr.pkl') # (구형)
+    # MODEL_PATH = os.path.join(BASE_DIR, 'models', 'drum_cnn_final.keras') # (Keras)
+    MODEL_PATH = os.path.join(BASE_DIR, 'models', 'drum_cnn_final.tflite')  # (최종)
 
     # 폴더가 없으면 자동으로 생성
     @staticmethod

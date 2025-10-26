@@ -1,5 +1,6 @@
-# app/tasks.py
+# backend/app/tasks.py
 import threading
+from flask import current_app
 
 # 작업 상태를 저장할 인-메모리 딕셔너리
 jobs = {}
@@ -20,10 +21,11 @@ def start_background_task(job_id, audio_path):
     """백그라운드에서 오디오 처리 파이프라인을 실행합니다."""
     from app.services.audio_processor import run_processing_pipeline
 
-    # Flask의 애플리케이션 컨텍스트를 스레드 내에서 사용 가능하게 합니다.
-    from backend.run import app
+    # 현재 실행 중인 Flask app 객체를 안전하게 복사
+    app = current_app._get_current_object()
 
     def task_with_context():
+        # 복사된 app 객체의 컨텍스트 안에서 작업을 실행
         with app.app_context():
             run_processing_pipeline(job_id, audio_path)
 
