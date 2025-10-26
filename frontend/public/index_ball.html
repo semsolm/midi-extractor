@@ -15,32 +15,32 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            min-height: 90vh; 
             margin: 0;
         }
 
         /* 2. 메인 컨테이너 스타일 */
         .container {
             background-color: #ffffff;
-            padding: 40px;
+            padding: 30px; 
             border-radius: 16px; /* 더 둥근 모서리 */
             /* 더 부드럽고 입체적인 그림자 */
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
             width: 90%;
-            max-width: 400px; /* 컨테이너 폭 약간 줄임 */
+            max-width: 550px; 
             text-align: center;
             /* Transition for subtle effect */
             transition: transform 0.3s ease; 
         }
         .container:hover {
-            transform: translateY(-3px); /* 마우스 오버 시 살짝 떠오르는 효과 */
+            transform: translateY(-3px);
         }
 
         /* 3. 이미지 스타일 */
         .container img {
-            max-width: 120px; /* 이미지 크기 축소 */
+            max-width: 240px; /* 이미지 크기 조정 */
             height: auto;
-            margin-bottom: 25px; /* 여백 조정 */
+            margin-bottom: 50px; /* 여백 조정 */
             display: block;
             margin-left: auto;
             margin-right: auto;
@@ -49,22 +49,36 @@
 
         /* 4. 헤더 스타일 */
         h1 {
-            color: #1f2937; /* 진한 회색 */
+            color: #1f2937;
             margin-bottom: 8px;
-            font-size: 1.6em; /* 폰트 크기 조정 */
+            font-size: 1.6em; 
             font-weight: 700;
         }
 
         .subtitle {
             color: #6b7280;
-            margin-bottom: 30px;
+            margin-bottom: 25px; 
             font-size: 0.9em;
         }
 
-        /* 5. 입력 그룹 */
+        /* 5. 입력 그룹 및 드래그 앤 드롭 영역 */
         .input-group {
-            margin-bottom: 20px;
+            margin: 0 auto 20px auto; 
+            width: 100%;
+            max-width: 490px; 
             text-align: left;
+            /* 드래그 앤 드롭 영역 스타일 */
+            padding: 22.5px;
+            min-height: 100px; /* 세로 크기 증가 */
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            transition: border-color 0.2s ease-in-out;
+            cursor: pointer; /* 드래그 가능함을 표시 */
+        }
+        /* 드래그 오버 시 하이라이트 CSS */
+        .input-group.highlight {
+            border-color: #4f46e5;
+            background-color: #f0f4ff;
         }
         .input-group label {
             font-weight: 500;
@@ -83,13 +97,12 @@
             background-color: #f9fafb;
             cursor: pointer;
         }
-
+        
         /* 6. 버튼 스타일 */
         .controls {
-            margin: 0 auto 30px auto; /* 하단 여백 증가 */
+            margin: 0 auto 30px auto;
             width: 100%;
-            /* 버튼 너비를 컨테이너에 맞춰 꽉 채우도록 유지 */
-            max-width: 100%; 
+            max-width: 490px; 
         }
 
         .controls button {
@@ -104,7 +117,7 @@
         }
 
         #startButton {
-            background-color: #4f46e5; /* 주요 버튼 색상 변경 (보라색 계열) */
+            background-color: #4f46e5;
             color: white;
             box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
         }
@@ -125,14 +138,14 @@
         #spinnerContainer {
             display: none;
             margin: 30px auto;
-            min-height: 50px; /* 높이 조정 */
+            min-height: 50px; 
             justify-content: center;
             align-items: center;
         }
 
         .loader {
             border: 4px solid #f3f4f6;
-            border-top: 4px solid #4f46e5; /* 스피너 색상 통일 */
+            border-top: 4px solid #4f46e5;
             border-radius: 50%;
             width: 30px;
             height: 30px;
@@ -153,28 +166,30 @@
         #statusMessageElement {
             margin-top: 15px;
             padding: 12px;
-            border-radius: 8px; /* 둥근 모서리 */
+            border-radius: 8px; 
             font-weight: 500;
             text-align: center;
-            border: 1px solid #dee2e6;
+            border: 1px solid #d1d5db;
             min-height: 20px;
+            max-width: 490px;
+            margin: 15px auto 0 auto;
         }
 
-        /* 상태별 색상 (현대적인 색상으로 변경) */
+        /* 상태별 색상 */
         .status-success {
-            background-color: #d1fae5; /* 연한 녹색 */
+            background-color: #d1fae5; 
             color: #065f46;
             border-color: #a7f3d0;
         }
 
         .status-error {
-            background-color: #fee2e2; /* 연한 빨강 */
+            background-color: #fee2e2; 
             color: #991b1b;
             border-color: #fecaca;
         }
 
         .status-info {
-            background-color: #e0f2fe; /* 연한 파랑 */
+            background-color: #e0f2fe; 
             color: #0369a1;
             border-color: #bae6fd;
         }
@@ -191,7 +206,7 @@
         <p class="subtitle">파일 전송 후 로딩 완료시 다운로드가 시작됩니다.</p>
 
         <div class="input-group">
-            <label for="fileInput">변환할 파일 선택:</label>
+            <label for="fileInput">파일을 드래그하거나 버튼을 눌러 선택:</label> 
             <input type="file" id="fileInput" name="file" accept=".txt, text/plain">
         </div>
 
@@ -203,18 +218,13 @@
             <div class="loader"></div>
         </div>
 
-        <p id="digit">파일을 업로드해주세요</p>
-        <div id="myProgress">
-            <div id="myBar">0%</div>
-        </div>
-
-        <div id="statusMessageElement" class="status-info">파일을 선택하고 '변환 시작'을 눌러주세요.</div>
+        <div id="statusMessageElement" class="status-info">파일을 선택하거나 드래그하여 올려주세요.</div>
     </div>
 
     <script>
         // --- 1. 전역 변수 설정 ---
         const API_URL = 'http://127.0.0.1:5000/api/download_modified';
-        const VIRTUAL_WAIT_SECONDS = 5; // 서버 응답 후 보여줄 가상 로딩 시간 (5초)
+        const VIRTUAL_WAIT_SECONDS = 5; 
 
         let isProcessing = false;
         let downloadBlob = null;
@@ -225,6 +235,7 @@
         const startButton = document.getElementById('startButton');
         const statusMessageElement = document.getElementById('statusMessageElement');
         const spinnerContainer = document.getElementById('spinnerContainer');
+        const inputGroup = document.querySelector('.input-group');
 
         // --- 3. 상태 메시지 업데이트 헬퍼 함수 ---
         function updateStatus(message, type = 'info') {
@@ -232,7 +243,55 @@
             statusMessageElement.className = `status-${type}`;
         }
 
-        // --- 4. 파일 전송 및 서버 응답 받기 (Phase 1) ---
+        // --- 4. 드래그 앤 드롭 이벤트 핸들러 (추가) ---
+
+        // 브라우저 기본 동작 방지
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            inputGroup.addEventListener(eventName, preventDefaults, false);
+        });
+
+        // 드래그 영역 스타일링 (하이라이트)
+        ['dragenter', 'dragover'].forEach(eventName => {
+            inputGroup.addEventListener(eventName, () => inputGroup.classList.add('highlight'), false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            inputGroup.addEventListener(eventName, () => inputGroup.classList.remove('highlight'), false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        inputGroup.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            // 1. 드롭된 파일 가져오기
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            // 2. 파일 입력 필드에 드롭된 파일 할당
+            fileInput.files = files; 
+
+            // 3. 파일 선택 로직 시작 (UI 업데이트)
+            handleFileSelect();
+        }
+        
+        // --- 5. 파일 선택 변경 감지 리스너 (기존 로직 시작점) ---
+        fileInput.addEventListener('change', handleFileSelect);
+
+        function handleFileSelect() {
+            const selectedFile = fileInput.files[0];
+            
+            if (selectedFile) {
+                // UI 업데이트: 파일이 선택되었음을 알림
+                updateStatus(`파일 '${selectedFile.name}'이 선택되었습니다. 변환 시작을 눌러주세요.`, 'info');
+            } else {
+                resetUI();
+            }
+        }
+
+        // --- 6. 파일 전송 및 서버 응답 받기 (Phase 1) ---
         function sendFileToServer(file) {
             updateStatus(`파일을 서버로 전송하고 수정 요청 중...`, 'info'); 
 
@@ -250,15 +309,19 @@
                         });
                     }
 
+                    // 백엔드가 반환하는 헤더를 처리
                     const disposition = response.headers.get('Content-Disposition') || response.headers.get('content-disposition');
                     const filenameMatch = disposition ? disposition.split('filename=')[1] : null;
                     const filename = filenameMatch ? filenameMatch.replace(/\"/g, '') : 'download_modified.txt';
 
                     return response.blob().then(blob => ({ blob, filename }));
+                })
+                .then(({ blob, filename }) => {
+                    return { blob, filename };
                 });
         }
 
-        // --- 5. 타이머 완료 후 다운로드 실행 (Phase 3) ---
+        // --- 7. 타이머 완료 후 다운로드 실행 (Phase 3) ---
         function finalizeDownload() {
             if (!downloadBlob) {
                 updateStatus('❌ 다운로드 실패: 서버 응답 데이터가 없습니다.', 'error');
@@ -274,7 +337,7 @@
             const a = document.createElement('a');
             a.style.display = 'none';
             a.href = url;
-            a.download = downloadFilename; 
+            a.download = downloadFilename;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
@@ -283,7 +346,7 @@
         }
 
 
-        // --- 6. 전체 프로세스 시작 (버튼 클릭 시) ---
+        // --- 8. 전체 프로세스 시작 (버튼 클릭 시) ---
         function startProcess() {
             if (isProcessing) return;
 
@@ -294,11 +357,16 @@
                 return;
             }
 
+            // downloadFilename은 서버 응답에서 가져오거나, 필요하다면 여기서 로직을 추가합니다.
+            let originalName = selectedFile.name;
+            downloadFilename = originalName.lastIndexOf('.') > 0 
+                ? originalName.substring(0, originalName.lastIndexOf('.')) + '_abcd.txt'
+                : originalName + '_abcd.txt';
+            
             isProcessing = true;
             startButton.disabled = true;
             startButton.innerText = '전송 중...';
             downloadBlob = null;
-            downloadFilename = '';
             
             spinnerContainer.style.display = 'flex';
             
@@ -322,7 +390,7 @@
                 });
         }
 
-        // --- 7. UI 초기화 ---
+        // --- 9. UI 초기화 ---
         function resetUI() {
             isProcessing = false;
 
@@ -331,10 +399,13 @@
 
             spinnerContainer.style.display = 'none';
 
+            // 파일 입력 필드 초기화
+            fileInput.value = null; 
+
             downloadBlob = null;
             downloadFilename = '';
 
-            updateStatus("파일을 선택하고 '변환 시작'을 눌러주세요.", 'info');
+            updateStatus("파일을 선택하거나 드래그하여 올려주세요.", 'info');
         }
 
         document.addEventListener('DOMContentLoaded', resetUI);
