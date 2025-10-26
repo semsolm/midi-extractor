@@ -1,4 +1,4 @@
-# config.py
+# backend/config.py
 import os
 
 class Config:
@@ -10,14 +10,13 @@ class Config:
     UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
     RESULT_FOLDER = os.path.join(BASE_DIR, 'results')
 
-    # AI 모델 파일 경로 (.pkl -> .keras)
-    # MODEL_PATH = os.path.join(BASE_DIR, 'models', 'kick_snare_lr.pkl') # (구형)
-    # MODEL_PATH = os.path.join(BASE_DIR, 'models', 'drum_cnn_final.keras') # (Keras)
-    MODEL_PATH = os.path.join(BASE_DIR, 'models', 'drum_cnn_final.tflite')  # (최종)
+    # 모델 파일 경로:
+    MODEL_PATH = os.path.join(BASE_DIR, 'app', 'models', 'drum_cnn_final.tflite')
 
     # 폴더가 없으면 자동으로 생성
     @staticmethod
     def init_app(app):
         os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
         os.makedirs(Config.RESULT_FOLDER, exist_ok=True)
-        os.makedirs(os.path.join(Config.BASE_DIR, 'models'), exist_ok=True)
+        # [수정] 모델 폴더 생성 경로도 'app'을 포함하도록 변경
+        os.makedirs(os.path.join(Config.BASE_DIR, 'app', 'models'), exist_ok=True)
