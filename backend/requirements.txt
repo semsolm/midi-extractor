@@ -1,16 +1,30 @@
-# Flask Web Framework
+# --- 1. Flask 서버 ---
+# run.py를 실행하기 위한 웹 서버
 flask==3.0.3
 
-# Scientific Computing (Python 3.10 compatible)
-numpy==1.26.4
-
-# Audio and Music Processing
+# --- 2. 오디오 처리 (Core Logic) ---
+# audio_processor.py에서 오디오 파일을 로드하고 분석
 librosa==0.11.0
+# .mid 파일을 생성
 pretty_midi==0.2.11
 
-# Model Persistence & Machine Learning
-joblib==1.4.2
-scikit-learn==1.5.0
-
-# Audio Source Separation (for drum extraction)
+# --- 3. AI 모델 (Source Separation) ---
+# Demucs 음원 분리 라이브러리
 demucs==4.0.1
+# Demucs의 핵심 의존성 (PyTorch).
+# !! 중요: 로컬 GPU 테스트 시, 이 파일로 설치하기 전에
+# !! "pip install torch torchaudio --index-url ..." 명령어로
+# !! GPU 버전을 수동으로 먼저 설치
+torch==2.8.0
+torchaudio==2.8.0
+
+# --- 4. AI 모델 (Drum Classification) ---
+# audio_processor.py에서 .tflite 모델을 실행하기 위한 경량 런타임
+# (주의: 무거운 'tensorflow' 패키지와 함께 설치하면 안 됨)
+tflite-runtime
+
+# --- 5. 유틸리티 ---
+# librosa, tflite-runtime 등이 의존하는 핵심 라이브러리
+numpy==1.26.4
+# audio_processor.py에서 진행도 바를 표시
+tqdm
