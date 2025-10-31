@@ -1,16 +1,23 @@
-# Flask Web Framework
+# backend/requirements.txt (torch 2.0.0으로 버전 고정)
+
+# --- 1. GPU 인덱스 (본인의 PC의 장착된 GPU CUDA 활성화) ---
+# MX250 (CUDA 11.8)에 맞는 PyTorch 저장소
+--extra-index-url https://download.pytorch.org/whl/cu118
+
+# --- 2. Flask 서버 ---
 flask==3.0.3
 
-# Scientific Computing (Python 3.10 compatible)
-numpy==1.26.4
+# --- 3. AI 핵심 로직 ---
+# [수정] torchaudio의 요구사항에 맞춰 2.0.1 -> 2.0.0 으로 수정
+torch==2.0.0
+torchaudio==2.0.1
 
-# Audio and Music Processing
+# demucs는 위 버전에 맞춰서 설치됨
+demucs==4.0.1
+tensorflow
+
+# --- 4. 오디오 및 유틸리티 ---
 librosa==0.11.0
 pretty_midi==0.2.11
-
-# Model Persistence & Machine Learning
-joblib==1.4.2
-scikit-learn==1.5.0
-
-# Audio Source Separation (for drum extraction)
-demucs==4.0.1
+numpy==1.26.4
+tqdm

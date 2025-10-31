@@ -22,6 +22,7 @@ def process_audio_route():
         filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], f"{job_id}.mp3")
         file.save(filepath)
 
+        # [수정] progress=0 제거
         tasks.update_job_status(job_id, 'pending', '작업을 대기 중입니다.')
         tasks.start_background_task(job_id, filepath)
 
@@ -30,10 +31,9 @@ def process_audio_route():
             "message": "파일 업로드 성공. 처리 작업을 시작합니다."
         }), 202
 
-
+# --- (이하 /api/result/, /download/ 등은 기존과 동일) ---
 @bp.route('/api/result/<job_id>', methods=['GET'])
 def get_result_route(job_id):
-    """작업 상태와 결과를 조회합니다."""
     job = tasks.get_job_status(job_id)
     if not job:
         return jsonify({"error": "해당 작업 ID를 찾을 수 없습니다."}), 404
@@ -42,7 +42,6 @@ def get_result_route(job_id):
 
 @bp.route('/download/midi/<job_id>', methods=['GET'])
 def download_midi_route(job_id):
-    """생성된 MIDI 파일을 다운로드합니다."""
     result_dir = os.path.join(current_app.config['RESULT_FOLDER'], job_id)
     filename = f"{job_id}.mid"
     if os.path.exists(os.path.join(result_dir, filename)):
