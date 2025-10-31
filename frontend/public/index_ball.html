@@ -23,13 +23,11 @@
         .container {
             background-color: #ffffff;
             padding: 30px; 
-            border-radius: 16px; /* 더 둥근 모서리 */
-            /* 더 부드럽고 입체적인 그림자 */
+            border-radius: 16px; 
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
             width: 90%;
             max-width: 550px; 
             text-align: center;
-            /* Transition for subtle effect */
             transition: transform 0.3s ease; 
         }
         .container:hover {
@@ -38,9 +36,9 @@
 
         /* 3. 이미지 스타일 */
         .container img {
-            max-width: 240px; /* 이미지 크기 조정 */
+            max-width: 240px;
             height: auto;
-            margin-bottom: 50px; /* 여백 조정 */
+            margin-bottom: 50px; 
             display: block;
             margin-left: auto;
             margin-right: auto;
@@ -67,19 +65,19 @@
             width: 100%;
             max-width: 490px; 
             text-align: left;
-            /* 드래그 앤 드롭 영역 스타일 */
             padding: 22.5px;
-            min-height: 100px; /* 세로 크기 증가 */
+            min-height: 100px;
             border: 2px dashed #ccc;
             border-radius: 8px;
             transition: border-color 0.2s ease-in-out;
-            cursor: pointer; /* 드래그 가능함을 표시 */
+            cursor: pointer;
         }
-        /* 드래그 오버 시 하이라이트 CSS */
+        /* 드래그 오버 시 하이라이트 */
         .input-group.highlight {
             border-color: #4f46e5;
             background-color: #f0f4ff;
         }
+
         .input-group label {
             font-weight: 500;
             color: #4b5563;
@@ -97,7 +95,7 @@
             background-color: #f9fafb;
             cursor: pointer;
         }
-        
+
         /* 6. 버튼 스타일 */
         .controls {
             margin: 0 auto 30px auto;
@@ -157,11 +155,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* 기존 로딩바 요소는 숨김 */
-        #myProgress, #digit {
-            display: none;
-        }
-
         /* 8. 상태 메시지 영역 */
         #statusMessageElement {
             margin-top: 15px;
@@ -206,8 +199,8 @@
         <p class="subtitle">파일 전송 후 로딩 완료시 다운로드가 시작됩니다.</p>
 
         <div class="input-group">
-            <label for="fileInput">파일을 드래그하거나 버튼을 눌러 선택:</label> 
-            <input type="file" id="fileInput" name="file" accept=".txt, text/plain">
+            <label for="fileInput">파일을 드래그하거나 선택:</label>
+            <input type="file" id="fileInput" name="file" accept="audio/*">
         </div>
 
         <div class="controls">
@@ -237,15 +230,14 @@
         const spinnerContainer = document.getElementById('spinnerContainer');
         const inputGroup = document.querySelector('.input-group');
 
+
         // --- 3. 상태 메시지 업데이트 헬퍼 함수 ---
         function updateStatus(message, type = 'info') {
             statusMessageElement.innerText = message;
             statusMessageElement.className = `status-${type}`;
         }
 
-        // --- 4. 드래그 앤 드롭 이벤트 핸들러 (추가) ---
-
-        // 브라우저 기본 동작 방지
+        // --- 4. 드래그 앤 드롭 이벤트 핸들러 ---
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
             inputGroup.addEventListener(eventName, preventDefaults, false);
         });
@@ -266,14 +258,9 @@
         inputGroup.addEventListener('drop', handleDrop, false);
 
         function handleDrop(e) {
-            // 1. 드롭된 파일 가져오기
             const dt = e.dataTransfer;
             const files = dt.files;
-
-            // 2. 파일 입력 필드에 드롭된 파일 할당
             fileInput.files = files; 
-
-            // 3. 파일 선택 로직 시작 (UI 업데이트)
             handleFileSelect();
         }
         
@@ -284,12 +271,12 @@
             const selectedFile = fileInput.files[0];
             
             if (selectedFile) {
-                // UI 업데이트: 파일이 선택되었음을 알림
                 updateStatus(`파일 '${selectedFile.name}'이 선택되었습니다. 변환 시작을 눌러주세요.`, 'info');
             } else {
                 resetUI();
             }
         }
+
 
         // --- 6. 파일 전송 및 서버 응답 받기 (Phase 1) ---
         function sendFileToServer(file) {
@@ -309,7 +296,6 @@
                         });
                     }
 
-                    // 백엔드가 반환하는 헤더를 처리
                     const disposition = response.headers.get('Content-Disposition') || response.headers.get('content-disposition');
                     const filenameMatch = disposition ? disposition.split('filename=')[1] : null;
                     const filename = filenameMatch ? filenameMatch.replace(/\"/g, '') : 'download_modified.txt';
