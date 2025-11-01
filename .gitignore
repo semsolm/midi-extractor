@@ -1,56 +1,60 @@
-Python
+# --- Python (Backend & AI) ---
 
-pycache/
-*.pyc
-*.pyo
-*.pyd
-.Python
+# 가상 환경
 env/
 venv/
 .venv/
 
-Environments
+# Python 캐시 파일
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
+# 민감한 환경 변수 파일
 .env
 .env.*
 instance/
 
-Dependencies
-
-node_modules/
-*.egg-info/
-
-Frontend Build Artifacts
-
-/frontend/build/
-/frontend/.pnp.*
-
-IDE & Editor Configurations
-
+# IDE 및 로컬 설정
 .idea/
 .vscode/
 
-OS-specific files
+# AI 모델링 결과물 (학습된 모델, 데이터)
+/backend/modeling/outputs/
+/backend/modeling/data/
+mlruns/
 
-.DS_Store
-Thumbs.db
+# --- Frontend (Node.js & Vite) ---
 
-Project-specific Generated Files
+# 의존성 패키지
+node_modules/
 
+# Vite 빌드 결과물 (Vite는 'dist' 폴더를 사용)
+/frontend/dist/
+
+# React-scripts 빌드 결과물 (이전 기록)
+/frontend/build/
+
+# 로그 파일
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# PnP (Yarn)
+.pnp.*
+
+# --- 프로젝트별 생성 파일 ---
+
+# Flask 서버가 생성하는 업로드 및 결과 폴더
 uploads/
 results/
 
-AI Modeling Outputs
+# --- OS (운영체제) ---
 
-/backend/modeling/outputs/
-/backend/modeling/data/
+# macOS
+.DS_Store
 
-Log files
-
-*.log
-
---- [추가] MLflow 데이터 폴더 제외 ---
-
-mlruns/
-
----
+# Windows
+Thumbs.db
