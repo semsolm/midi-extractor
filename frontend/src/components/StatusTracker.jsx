@@ -1,5 +1,6 @@
 // src/components/StatusTracker.jsx
 import * as api from '../services/api';
+import React, { useState, useEffect, useRef } from 'react';
 
 export function StatusTracker({ jobId, onComplete, onError }) {
   // 백엔드 tasks.py의 'message' 필드를 표시

@@ -41,7 +41,7 @@ except Exception as e:
 
 # --- 설정 ---
 DATA_PATH = os.path.join(PROJECT_ROOT, "backend", "modeling", "data", "raw")
-NUM_CLASSES = 4 # "backend", "modeling", "data", "raw"
+NUM_CLASSES = 3 # 드럼 소리 클래스 수
 INPUT_SHAPE = (128, 128, 1)
 
 # 상대 경로('../outputs/models') 대신 PROJECT_ROOT를 기준으로 하는 절대 경로 사용

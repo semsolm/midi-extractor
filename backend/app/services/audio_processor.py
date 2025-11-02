@@ -22,31 +22,44 @@ N_MELS = 128
 N_FFT = 2048
 HOP_LENGTH = 512
 TARGET_SHAPE = (128, 128)
-LABELS = ["kick", "snare", "toms", "overheads"]
-NOTE_MAP = {"kick": 36, "snare": 38, "toms": 45, "overheads": 42}
+LABELS = ["kick", "snare", "hi-hat"]
+NOTE_MAP = {"kick": 36, "snare": 38, "hi-hat": 46}
 
 # --- [수정] TQDM 출력을 Job Status의 'message'로 리디렉션 ---
 class TqdmToJobUpdater(io.StringIO):
     """
     tqdm의 진행도 바(bar) 문자열을 가로채서
-    update_job_status()의 'message' 필드에 통째로 씁니다.
+    "설명: XX%" 형태의 단순한 메시지로 변환하여 'message' 필드에 씁니다.
     """
     def __init__(self, job_id, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.job_id = job_id
+        self._last_message = "" # 중복 전송을 막기 위한 내부 캐시
 
     def write(self, s):
-        # tqdm이 출력하는 문자열 (e.g., "MIDI 변환: 50%|███...| 50/100 ...")
         message = s.strip()
+        if not message or message == '\r':
+            return
+
+        # 정규표현식으로 설명(desc)과 퍼센트(%) 추출
+        # 예: "MIDI 노트 변환 중: 67%|#..." -> "MIDI 노트 변환 중:" and "67%"
+        match = re.search(r'^(.*?:)?\s*(\d+%)', message)
         
-        # 빈 줄이 아니거나 \r (캐리지 리턴)만 있지 않은 경우에만 업데이트
-        if message and message != '\r':
+        simple_message = self._last_message # 기본값 (파싱 실패 시 이전 메시지 유지)
+
+        if match:
+            desc = match.group(1) or "처리 중..." # "MIDI 노트 변환 중:"
+            percent = match.group(2) # "67%"
+            simple_message = f"{desc.strip()} {percent}"
+        
+        # 마지막으로 전송한 메시지와 다를 경우에만 DB(jobs 딕셔너리) 업데이트
+        if simple_message != self._last_message:
+            self._last_message = simple_message
             from app.tasks import update_job_status
-            # [수정] 'message' 필드에 tqdm 출력 문자열 원본을 전달
             update_job_status(
                 self.job_id,
                 'processing',
-                message
+                simple_message
             )
 
 # --- TFLite 모델 로드 함수 (기존과 동일, logger 사용) ---
@@ -91,19 +104,29 @@ def run_demucs_separation(input_path, output_dir, job_id):
     )
 
     # [수정] Demucs의 "Separating: ..." 문자열만 찾기
-    progress_re = re.compile(r"Separating:.*")
+    # [추가] 마지막 메시지 캐시
+    last_demucs_message = ""
 
     try:
-        for line in iter(process.stderr.readline, ''):
-            if not line and process.poll() is not None:
-                break
-            
+        # [수정] iter(process.stderr.readline, '') -> process.stderr
+        # 한 줄씩 버퍼링 없이 읽기 위해 Popen에 bufsize=1 추가
+        for line in process.stderr:
             line_strip = line.strip()
             current_app.logger.info(f"[Demucs/stderr - {job_id}]: {line_strip}")
 
-            # [수정] "Separating: ..."으로 시작하는 라인만 'message'로 업데이트
+            # [수정] "Separating: ..." 라인을 파싱
             if line_strip.startswith("Separating:"):
-                update_job_status(job_id, 'processing', message=line_strip)
+                # "Separating: 100%|..." -> "드럼 분리 중... 100%"
+                match = re.search(r'(\d+%)', line_strip)
+                simple_message = "드럼 분리 중..." # 기본 메시지
+                
+                if match:
+                    simple_message = f"드럼 분리 중... {match.group(1)}"
+                
+                # 마지막 메시지와 다를 경우에만 업데이트
+                if simple_message != last_demucs_message:
+                    last_demucs_message = simple_message
+                    update_job_status(job_id, 'processing', message=simple_message)
                 
     finally:
         stdout_data, stderr_data = process.communicate()
@@ -259,20 +282,6 @@ def run_processing_pipeline(job_id, audio_path):
         # midi_success가 False인 경우 (generate_midi_from_audio 실패)
         update_job_status(job_id, 'error', 'MIDI 생성 중 오류가 발생했습니다.')
         current_app.logger.error(f"[{job_id}] 작업 실패.")
-
-
-# --- MuseScore 경로 설정 ---
-# 1. PC에 설치된 MuseScore 경로를 여기에 붙여넣으세요.
-MUSESCORE_PATH = r'C:/Program Files/MuseScore 4/bin/MuseScore4.exe'
-
-try:
-    us = m21.environment.UserSettings()
-    # 'musicxmlPath' (MuseScore) 또는 'lilypondPath' 경로를 직접 지정
-    us['musicxmlPath'] = MUSESCORE_PATH
-    us['musescoreDirectPNGPath'] = MUSESCORE_PATH # PDF 변환에도 이 경로가 사용됨
-    current_app.logger.info(f"music21: MuseScore 경로가 {MUSESCORE_PATH}로 설정되었습니다.")
-except Exception as e:
-    current_app.logger.warning(f"music21: 환경 설정 중 경고 발생: {e}")
 
 # --- MIDI를 퍼커션 악보 PDF로 변환 함수 ---
 def generate_pdf_from_midi(midi_path, pdf_output_path, job_id):

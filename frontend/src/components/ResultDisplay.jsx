@@ -1,5 +1,6 @@
 // src/components/ResultDisplay.jsx
 import * as api from '../services/api';
+import React from 'react';
 
 export function ResultDisplay({ results, onReset }) {
   // results 객체: { midiUrl, pdfUrl }
