@@ -54,5 +54,7 @@ def download_pdf_route(job_id):
     result_dir = os.path.join(current_app.config['RESULT_FOLDER'], job_id)
     filename = f"{job_id}.pdf"
     if os.path.exists(os.path.join(result_dir, filename)):
-        return send_from_directory(result_dir, filename, as_attachment=False) # PDF는 브라우저에서 바로 열람해야 함
-    return jsonify({"error": "MIDI 파일을 찾을 수 없습니다."}), 404
+        return send_from_directory(result_dir, filename, as_attachment=False)
+    
+    # [수정] 오류 메시지를 "MIDI"에서 "PDF"로 변경
+    return jsonify({"error": "PDF 악보 파일을 찾을 수 없습니다."}), 404

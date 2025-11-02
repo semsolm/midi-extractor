@@ -1,9 +1,10 @@
-// src/components/ResultDisplay.jsx
-import * as api from '../services/api';
-import React from 'react';
+// frontend/src/components/ResultDisplay.jsx
+
+import React from 'react'; // React 임포트
+import * as api from '../services/api'; // api.js 임포트
 
 export function ResultDisplay({ results, onReset }) {
-  // results 객체: { midiUrl, pdfUrl }
+  // App.jsx로부터 받은 results 객체에서 URL을 추출합니다.
   const midiDownloadUrl = api.getFullDownloadUrl(results.midiUrl);
   const pdfDownloadUrl = api.getFullDownloadUrl(results.pdfUrl);
 
@@ -13,27 +14,31 @@ export function ResultDisplay({ results, onReset }) {
         ✅ 변환이 완료되었습니다!
       </div>
       
-      {/* --- Start: PDF 뷰어 (index_test.html에서 가져옴) --- */}
+      {/* --- Start: PDF 뷰어 --- */}
+      {/* 이 iframe이 "pretty_print" 상자를 대체합니다.
+        src={pdfDownloadUrl}는 백엔드 API (routes.py)의 
+        /download/pdf/<job_id> 경로를 호출합니다.
+      */}
       <div id="pdfViewerContainer" style={{ display: 'block' }}>
         <iframe
           id="pdfViewer"
           title="PDF Viewer"
-          src={pdfDownloadUrl} // 백엔드에서 받은 PDF 경로를 src로 지정
+          src={pdfDownloadUrl} 
         ></iframe>
       </div>
       {/* --- End: PDF 뷰어 --- */}
 
-      <div className="controls" style={{ marginTop: '20px' }} >
+      <div className="controls" style={{ marginTop: '20px' }}>
         <a 
           href={midiDownloadUrl} 
           className="button-primary download-link"
-          download // 'download' 속성으로 파일 다운로드
+          download
         >
           MIDI 악보(.mid) 다운로드
         </a>
       </div>
       
-      {/* '처음으로 돌아가기' 버튼 (index_test.html 스타일 적용) */}
+      {/* '처음으로 돌아가기' 버튼 */}
       <button
         id="resetButton"
         onClick={onReset}

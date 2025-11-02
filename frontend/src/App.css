@@ -237,3 +237,29 @@ input[type="file"] {
 #resetButton:hover {
   background-color: #059669;
 }
+
+/* --- 10. 하단 푸터 스타일 --- */
+
+.app-footer {
+  width: 100%;
+  max-width: 550px;
+  text-align: center;
+  padding: 20px 0;
+  margin-top: 10px;
+  border-top: 1px solid #e5e7eb; /* 상단 구분선 */
+  font-size: 0.8rem; /* 폰트 크기 살짝 조정 */
+  color: #6b7280;
+  line-height: 1.6;
+}
+.app-footer p {
+  margin: 4px 0; /* 줄 간격 조정 */
+}
+.app-footer a {
+  color: #6b7280;
+  font-weight: 500;
+  text-decoration: none;
+  margin: 0 5px;
+}
+.app-footer a:hover {
+  text-decoration: underline;
+}

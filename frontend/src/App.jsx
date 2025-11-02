@@ -95,14 +95,37 @@ function App() {
   };
 
   return (
-    <div className="container">
-      {/* drummer.png는 frontend/assets/ 폴더 내에 있어야 합니다. */}
-      <img src={drummerImg} alt="드럼 치는 사람" /> 
-      <h1>드럼 사운드 자동 분류 및 악보 생성 시스템</h1>
-      <p className="subtitle">파일 전송 후 변환 완료 시 다운로드가 가능합니다.</p>
-      
-      {renderContent()}
-    </div>
+    // [수정] 여러 요소를 반환하기 위해 Fragment(<></>)로 감쌉니다.
+    <>
+      <div className="container">
+        {/* drummer.png는 frontend/assets/ 폴더 내에 있어야 합니다. */}
+        <img src={drummerImg} alt="드럼 치는 사람" /> 
+        <h1>드럼 사운드 자동 분류 및 악보 생성 시스템</h1>
+        <p className="subtitle">파일 전송 후 변환 완료 시 다운로드가 가능합니다.</p>
+        
+        {renderContent()}
+      </div>
+
+      {/* --- [신규] 하단 푸터 추가 --- */}
+      <footer className="app-footer">
+        <p>
+          {/* (추후 개인정보처리방침을 만들면 링크 추가) */}
+          <a href="https://github.com/semsolm/midi-extractor/blob/main/readme.md" target="_blank" rel="noopener noreferrer">개인정보처리방침 </a> | 
+          {/* (팀 GitHub 리포지토리의 Issues 탭 주소로 변경하세요) */}
+          <a href="https://github.com/semsolm/midi-extractor/issues" target="_blank" rel="noopener noreferrer">오류/건의</a>
+        </p>
+        
+        {/* 예시 이미지의 스타일을 적용 */}
+        <p>Copyright © 2025. Team 경로당. All Rights Reserved.</p>
+        <p>
+          본 시스템은 [안양대학교 캡스톤 디자인 수업] 의 팀 프로젝트로 제작되었습니다.
+        </p>
+        <p>
+          본 시스템은 학습 및 비영리 목적으로만 무료로 사용할 수 있습니다.<br />
+          생성된 악보의 정확성을 보장하지 않으며, 사용으로 인한 법적 책임을 지지 않습니다.
+        </p>
+      </footer>
+    </>
   );
 }
 
