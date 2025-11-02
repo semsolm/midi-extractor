@@ -51,4 +51,8 @@ def download_midi_route(job_id):
 
 @bp.route('/download/pdf/<job_id>', methods=['GET'])
 def download_pdf_route(job_id):
-    return jsonify({"message": "PDF 생성 기능은 아직 구현되지 않았습니다."}), 501
+    result_dir = os.path.join(current_app.config['RESULT_FOLDER'], job_id)
+    filename = f"{job_id}.pdf"
+    if os.path.exists(os.path.join(result_dir, filename)):
+        return send_from_directory(result_dir, filename, as_attachment=False) # PDF는 브라우저에서 바로 열람해야 함
+    return jsonify({"error": "MIDI 파일을 찾을 수 없습니다."}), 404

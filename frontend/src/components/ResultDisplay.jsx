@@ -12,7 +12,17 @@ export function ResultDisplay({ results, onReset }) {
         ✅ 변환이 완료되었습니다!
       </div>
       
-      <div className="controls">
+      {/* --- Start: PDF 뷰어 (index_test.html에서 가져옴) --- */}
+      <div id="pdfViewerContainer" style={{ display: 'block' }}>
+        <iframe
+          id="pdfViewer"
+          title="PDF Viewer"
+          src={pdfDownloadUrl} // 백엔드에서 받은 PDF 경로를 src로 지정
+        ></iframe>
+      </div>
+      {/* --- End: PDF 뷰어 --- */}
+
+      <div className="controls" style={{ marginTop: '20px' }} >
         <a 
           href={midiDownloadUrl} 
           className="button-primary download-link"
@@ -20,18 +30,15 @@ export function ResultDisplay({ results, onReset }) {
         >
           MIDI 악보(.mid) 다운로드
         </a>
-        <a 
-          href={pdfDownloadUrl} 
-          className="button-secondary download-link"
-          target="_blank" // PDF는 새 탭에서 열기 (구현 시)
-          rel="noopener noreferrer"
-        >
-          PDF 악보(.pdf) 다운로드
-        </a>
       </div>
       
-      <button onClick={onReset} className="button-secondary">
-        다른 파일 변환하기
+      {/* '처음으로 돌아가기' 버튼 (index_test.html 스타일 적용) */}
+      <button
+        id="resetButton"
+        onClick={onReset}
+        style={{ display: 'block', maxWidth: '490px', margin: '10px auto 0 auto' }}
+      >
+        처음으로 돌아가기
       </button>
     </div>
   );

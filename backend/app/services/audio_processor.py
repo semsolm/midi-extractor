@@ -13,6 +13,8 @@ import traceback
 from tqdm import tqdm
 from flask import current_app
 import tensorflow as tf
+import music21 as m21
+import traceback
 
 # --- 상수 정의 (기존과 동일) ---
 SR = 44100
@@ -225,16 +227,107 @@ def run_processing_pipeline(job_id, audio_path):
     # --- 3. MIDI 생성 ---
     current_app.logger.info(f"[{job_id}] MIDI 생성 시작...")
     
-    success = generate_midi_from_audio(separated_drum_path, result_dir, bpm)
+    # [수정] midi_success 변수에 성공 여부 저장
+    midi_success = generate_midi_from_audio(separated_drum_path, result_dir, bpm)
 
-    # --- 4. 최종 결과 업데이트 ---
-    if success:
+    if not midi_success:
+        update_job_status(job_id, 'error', 'MIDI 생성 중 오류가 발생했습니다.')
+        current_app.logger.error(f"[{job_id}] 작업 실패.")
+        return
+
+    # --- 4. (신규) PDF 생성 ---
+    if midi_success:
+        midi_file_path = os.path.join(result_dir, f"{job_id}.mid")
+        pdf_file_path = os.path.join(result_dir, f"{job_id}.pdf")
+        
+        pdf_success = generate_pdf_from_midi(midi_file_path, pdf_file_path, job_id)
+
+        if not pdf_success:
+            current_app.logger.error(f"[{job_id}] PDF 변환 실패. MIDI만 제공됩니다.")
+            # PDF가 실패해도 MIDI는 성공했으므로 계속 진행합니다.
+
+    # --- 5. [수정] 최종 결과 업데이트 ---
+    if midi_success:
         results = {
             "midiUrl": f"/download/midi/{job_id}",
             "pdfUrl": f"/download/pdf/{job_id}",
         }
         update_job_status(job_id, 'completed', '작업이 완료되었습니다.', results=results)
         current_app.logger.info(f"[{job_id}] 모든 작업 완료.")
-    else:
+    
+    else: 
+        # midi_success가 False인 경우 (generate_midi_from_audio 실패)
         update_job_status(job_id, 'error', 'MIDI 생성 중 오류가 발생했습니다.')
         current_app.logger.error(f"[{job_id}] 작업 실패.")
+
+
+# --- MuseScore 경로 설정 ---
+# 1. PC에 설치된 MuseScore 경로를 여기에 붙여넣으세요.
+MUSESCORE_PATH = r'C:/Program Files/MuseScore 4/bin/MuseScore4.exe'
+
+try:
+    us = m21.environment.UserSettings()
+    # 'musicxmlPath' (MuseScore) 또는 'lilypondPath' 경로를 직접 지정
+    us['musicxmlPath'] = MUSESCORE_PATH
+    us['musescoreDirectPNGPath'] = MUSESCORE_PATH # PDF 변환에도 이 경로가 사용됨
+    current_app.logger.info(f"music21: MuseScore 경로가 {MUSESCORE_PATH}로 설정되었습니다.")
+except Exception as e:
+    current_app.logger.warning(f"music21: 환경 설정 중 경고 발생: {e}")
+
+# --- MIDI를 퍼커션 악보 PDF로 변환 함수 ---
+def generate_pdf_from_midi(midi_path, pdf_output_path, job_id):
+    """
+    music21을 사용해 MIDI 파일을 드럼 악보(PDF)로 변환합니다.
+    MuseScore가 로컬에 설치되어 있어야 합니다.
+    """
+    from app.tasks import update_job_status
+    update_job_status(job_id, 'processing', 'MIDI 파일을 악보로 변환 중...')
+
+    musescore_path = r'C:/Program Files/MuseScore 4/bin/MuseScore4.exe' # <-- 본인 경로로 수정!
+
+    try:
+        # 2. music21 환경 설정 객체를 가져옵니다.
+        us = m21.environment.UserSettings()
+        
+        # 3. PDF 변환에 사용될 MuseScore 실행 파일 경로를 명시적으로 지정합니다.
+        us['musicxmlPath'] = musescore_path
+        us['musescoreDirectPNGPath'] = musescore_path 
+        
+        current_app.logger.info(f"[{job_id}] music21: MuseScore 경로가 {musescore_path}로 설정되었습니다.")
+    
+    except Exception as e:
+        current_app.logger.error(f"[{job_id}] music21: MuseScore 경로 설정 중 심각한 오류 발생: {e}")
+        update_job_status(job_id, 'error', f'MuseScore 경로 설정 오류: {e}')
+        return False
+    
+    try:
+        # 1. MIDI 파일 로드
+        score = m21.converter.parse(midi_path)
+
+        # 2. (중요) 모든 파트를 '퍼커션 악보'로 강제 변환
+        for part in score.recurse().getElementsByClass(m21.stream.Part):
+            # 기존 악기 정보 삭제
+            for el in part.getElementsByClass(m21.instrument.Instrument):
+                part.remove(el)
+
+            # 퍼커션 기호(Clef) 및 악기 삽입
+            part.insert(0, m21.clef.PercussionClef())
+            part.insert(0, m21.instrument.Percussion()) # 드럼 악보임을 명시
+
+        # 3. (선택) 노트 헤드 변경 (예: 하이햇/오버헤드를 'x'로)
+        for note in score.recurse().getElementsByClass(m21.note.Note):
+            # 42번(Overheads) 또는 46번(Hi-hat) 등...
+            if note.pitch.midi in [42, 46, 49, 51, 57]: 
+                note.notehead = 'x'
+
+        # 4. PDF로 변환 (로컬에 설치된 MuseScore를 호출)
+        # 'fp' (filepath) 인자를 사용해야 합니다.
+        score.write('pdf', fp=pdf_output_path)
+        current_app.logger.info(f"[{job_id}] PDF 악보 생성 성공: {pdf_output_path}")
+        return True
+
+    except Exception as e:
+        error_trace = traceback.format_exc()
+        current_app.logger.error(f"[{job_id}] PDF 생성 실패 (MuseScore 설치 확인): {e}\n{error_trace}")
+        update_job_status(job_id, 'error', 'PDF 악보 변환 실패 (MuseScore 설치 확인)')
+        return False

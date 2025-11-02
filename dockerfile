@@ -21,6 +21,8 @@ WORKDIR /app
 # 1. Python 3.10, pip, FFmpeg 설치 (기존과 동일)
 RUN apt-get update && \
     apt-get install -y python3.10 python3-pip ffmpeg && \
+    musescore3 \
+    # fonts-freefont-ttf && \  폰트 패키지 추가 설치       
     rm -rf /var/lib/apt/lists/*
 
 # 2. [수정] 'pip3' 대신 'python3 -m pip'를 사용하여 라이브러리 설치
