@@ -205,41 +205,40 @@ def generate_midi_from_audio(audio_path, result_dir, bpm=120):
 def generate_pdf_from_midi(midi_path, pdf_output_path, job_id):
     """
     music21로 MusicXML을 생성한 뒤, MuseScore를 subprocess로 직접 호출하여
-    PDF 드럼 악보를 생성합니다.
+    PDF 드럼 악보를 생성합니다. (OS에 따라 경로 자동 변경)
     """
     from app.tasks import update_job_status
     update_job_status(job_id, 'processing', 'MIDI 파일을 악보(XML)로 변환 중...')
 
-    # MuseScore 3 경로를 사용합니다.
-    musescore_path = r'C:/Program Files/MuseScore 3/bin/MuseScore3.exe' # <-- 본인 경로 확인
+    # --- [신규] OS에 따라 MuseScore 경로 설정 ---
+    if os.name == 'nt': # 'nt'는 Windows를 의미
+        musescore_path = r'C:/Program Files/MuseScore 3/bin/MuseScore3.exe'
+    else: # Windows가 아닌 경우 (Linux/Docker)
+        musescore_path = '/usr/bin/musescore3' # Ubuntu의 기본 설치 경로
+    # --- [신규] 여기까지 ---
 
+    # 1. 경로 확인
     if not os.path.exists(musescore_path):
         current_app.logger.error(f"[{job_id}] MuseScore 경로를 찾을 수 없습니다: {musescore_path}")
         update_job_status(job_id, 'error', 'MuseScore 실행 파일을 찾을 수 없습니다.')
         return False
 
+    # 임시 MusicXML 파일 경로
     xml_temp_path = pdf_output_path.replace(".pdf", ".xml")
 
     try:
         # 2. MIDI -> MusicXML 변환
         score = m21.converter.parse(midi_path)
-
-        # [수정] 악기 정보를 삭제하지 않고, 기보법(Clef)만 설정합니다.
+        
+        # [수정] 악기 정보를 삭제하지 않고, 기보법(Clef)만 설정
         for part in score.recurse().getElementsByClass(m21.stream.Part):
-            # --- [수정] 이 3줄을 삭제하거나 주석 처리 ---
-            # for el in part.getElementsByClass(m21.instrument.Instrument):
-            #     part.remove(el)
-            # part.insert(0, m21.instrument.Percussion())
-            # --- [수정] 여기까지 ---
-
-            # [유지] 퍼커션 기보법(Clef)은 그대로 삽입합니다.
             part.insert(0, m21.clef.PercussionClef())
-
-        # [유지] 노트 헤드 변경 (하이햇 'x')
+        
+        # [수정] B안 (3클래스) - 하이햇 노트 헤드 변경
         for note in score.recurse().getElementsByClass(m21.note.Note):
-            if note.pitch.midi == 42: # B안 (하이햇)
+            if note.pitch.midi == 42: 
                 note.notehead = 'x'
-
+        
         score.write('musicxml', fp=xml_temp_path)
         current_app.logger.info(f"[{job_id}] MusicXML 파일 생성 성공: {xml_temp_path}")
 
@@ -248,12 +247,12 @@ def generate_pdf_from_midi(midi_path, pdf_output_path, job_id):
         current_app.logger.error(f"[{job_id}] MusicXML 생성 실패: {e}\n{error_trace}")
         update_job_status(job_id, 'error', '악보(XML) 변환 실패')
         return False
-
+    
     try:
         # 3. MusicXML -> PDF 변환 (Subprocess 호출)
         update_job_status(job_id, 'processing', '악보(PDF) 생성 중...')
         command = [musescore_path, '-o', pdf_output_path, xml_temp_path]
-
+        
         result = subprocess.run(command, capture_output=True, text=True, timeout=30)
 
         if result.returncode != 0:
@@ -264,7 +263,7 @@ def generate_pdf_from_midi(midi_path, pdf_output_path, job_id):
             current_app.logger.error(f"[{job_id}] MuseScore는 성공했으나 PDF 파일이 생성되지 않음.")
             update_job_status(job_id, 'error', 'PDF 파일 생성 알 수 없는 오류')
             return False
-
+        
         current_app.logger.info(f"[{job_id}] PDF 악보 생성 성공: {pdf_output_path}")
         return True
 
@@ -273,7 +272,7 @@ def generate_pdf_from_midi(midi_path, pdf_output_path, job_id):
         current_app.logger.error(f"[{job_id}] PDF 변환(subprocess) 중 치명적 오류: {e}\n{error_trace}")
         update_job_status(job_id, 'error', 'PDF 변환 중 타임아웃 또는 오류 발생')
         return False
-
+    
     finally:
         # 4. 임시 XML 파일 삭제
         if os.path.exists(xml_temp_path):
