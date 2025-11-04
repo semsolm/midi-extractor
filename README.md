@@ -1,103 +1,84 @@
 # 🥁 드럼 사운드 자동 분류 및 악보 생성 AI 시스템
 
 ## 1. 팀 정보  
+
 - **팀명:** 경로당
-  
+
+ 
 | 팀원  | 학번 | 역할 | Github                                               | 비고        |
 |-----|------|------|------------------------------------------------------|-----------|
-| 윤상일 | 2020E7424 | AI/ML | [@semsolm](https://github.com/semsolm)               | 모델 설계 및 학습 |
-| 양태양 | 2021E7411 | Frontend | [-]()                                                | UI 개발     |
-| 최유진 | 2023E7518 | Frontend | [@cyj4795](https://github.com/cyj4795)                      | UI 디자인    |
-| 이준행 | 2020E7427 | Backend | [@LeopoldBloom2K](https://github.com/LeopoldBloom2K) |           |
-| 정서영 | 2020U2329 | Backend | [-]()                                                |           |
+| 윤상일 | 2020E7424 | AI/ML | [@semsolm](https://github.com/semsolm) | 모델 설계 및 학습 |
+| 양태양 | 2021E7411 | Frontend | [@sunning838](https://github.com/sunning838)| UI 개발 |
+| 최유진 | 2023E7518 | Frontend | [@cyj4795](https://github.com/cyj4795) | UI 디자인 |
+| 이준행 | 2020E7427 | Backend | [@LeopoldBloom2K](https://github.com/LeopoldBloom2K) |AI, 풀스택|
+| 정서영 | 2020U2329 | Backend | [@jwy23190](https://github.com/jwy23190) | 백엔드, 프론트 |
+
+
 
 ---
 
-## 2. 프로젝트 개요  
+### 1. 프로젝트 개요
 
-### 🔹 프로젝트 제목  
-**드럼 사운드 자동 분류 및 악보 생성 AI 시스템**
+#### 🔹 프로젝트 제목
+드럼 사운드 자동 분류 및 악보 생성 시스템
 
-### 🔹 프로젝트 목적  
-음악 녹음 파일에서 드럼 소리를 사람이 직접 듣고 악보로 옮기는 과정은 많은 시간과 노력이 필요합니다.  
-본 프로젝트는 **드럼 소리를 자동으로 인식 및 분류(Kick, Snare, Hi-hat)** 하여 **MIDI 형태로 변환 및 악보를 자동 생성**하는 AI 기반 시스템을 개발하는 것을 목표로 합니다.  
+#### 🔹 프로젝트 목적
+본 프로젝트는 사용자가 업로드한 오디오 파일에서 드럼 사운드를 자동으로 인식하는 AI 시스템을 개발하는 것을 목표로 합니다.
 
----
+시스템은 오디오 파일에서 드럼 트랙을 분리하고, 개별 타격음을 **Kick, Snare, Hi-hat**의 3가지 클래스로 분류합니다. 최종적으로, 분류된 드럼 노트를 기반으로 **MIDI 파일**과 **PDF 악보**를 자동으로 생성하여 사용자에게 제공합니다.
 
-## 3. 데이터 수집 계획 및 활동 내용  
+### 2. 데이터 수집 및 분류
 
-### 📘 (1) 데이터 수집 계획
+* **데이터 종류:** AI 모델 학습에 오디오 파일이 사용됩니다.
+* **데이터 출처 (추정):** 학습 스크립트(`train.py`)는 Kaggle의 "Drum Kit Sound Samples" 데이터셋을 참조합니다.
+* **분류 클래스:** 모델은 드럼 사운드를 3가지 주요 클래스로 분류하도록 학습됩니다:
+    1.  `kick` (레이블 0)
+    2.  `snare` (레이블 1)
+    3.  `hi-hat` (레이블 2)
 
-| 구분 | 내용 |
-|------|------|
-| **데이터 종류** | 오디오 데이터 (드럼 타격 소리: 킥, 스네어, 하이햇) |
-| **데이터 출처** | 직접 수집 (스마트폰 녹음) + Kaggle “Drum Kit Sound Samples” |
-| **수집 방법** | 스마트폰 녹음기로 드럼 타격음(2초) 녹음 → 라벨링 및 분류 |
-| **수집 기간** | 10월 중순 (1~2주 예정) |
-| **데이터 양 (예상)** | 각 클래스별 30개 (Kick, Snare, Hi-hat) + 증강 데이터 |
-| **라이선스** | Kaggle: 비상업적 연구 가능 / 직접 녹음 데이터: 저작권 문제 없음 |
+### 3. 데이터 전처리 및 EDA 계획
 
-#### 🎧 예시 데이터 구조
+#### 📘 (1) 데이터 전처리
 
-| 파일명 | 라벨 | 길이(s) |
-|--------|------|----------|
-| Snare1.wav | snare | 1 |
-
----
-
-### 📘 (2) 데이터 수집 활동 현황  
-
-| 사운드 | Kick | Snare | Hi-hat |
-|---------|-------|--------|--------|
-| **개수** | 30개 | 30개 | 30개 |
-
-**데이터 출처:**  
-- [Kaggle Drum Kit Sound Samples](https://www.kaggle.com/datasets/anubhavchhabra/drum-kit-sound-samples?select=overheads)  
-- 직접 녹음 데이터 (하이햇 오픈·클로즈, 세미오픈, 크레센도 등)
-
-**수집 중 어려움:**  
-- 드럼 데이터셋의 불균형 (Kick/ Snare 중심)  
-- 녹음 품질 차이로 인한 음량 편차 및 노이즈  
-➡ 직접 녹음과 데이터 증강(노이즈 추가, 속도/톤 변형, 리버브 효과 등)으로 보완 예정  
-
----
-
-## 4. 데이터 전처리 및 EDA 계획  
+AI 모델 학습 및 실제 서비스 제공 시 일관된 전처리 파이프라인을 사용합니다.
 
 | 항목 | 내용 |
-|------|------|
-| **예상 문제** | 녹음 환경·장비 차이 → 음량 편차, 노이즈 발생 가능 |
-| **전처리 도구** | `librosa`, `soundfile`, `audiomentations`, `pydub`, `numpy` |
-| **주요 전처리 단계** | <ul><li>사운드 파일 포맷 통일</li><li>앞·뒤 공백 제거 (`librosa.effects.trim`)</li><li>길이 통일 (150ms)</li><li>볼륨 정규화</li><li>데이터 증강</li></ul> |
-| **EDA 목적** | 각 드럼 클래스별 음향적 특성(파형, 주파수 대역, 패턴) 시각화를 통해 이상치 식별 및 데이터 품질 개선 |
-| **시각화 도구** | `librosa.display.waveshow`, `librosa.display.specshow`, `matplotlib` |
+| :--- | :--- |
+| **전처리 도구** | `librosa`, `numpy` |
+| **샘플링 레이트** | 모든 오디오를 `SR=44100` Hz로 통일합니다. |
+| **길이 통일** | 오디오 길이를 1초(`SR`)로 고정합니다. (1초 미만은 패딩, 1초 초과는 잘라내기) |
+| **특징 벡터** | 멜 스펙트로그램 (`N_MELS=128`, `N_FFT=2048`)으로 변환합니다. |
+| **스케일링** | `librosa.power_to_db`를 사용하여 데시벨 스케일로 변환합니다. |
+| **최종 형태** | 모든 스펙트로그램 이미지를 `(128, 128)` 크기로 고정한 뒤, CNN 입력을 위해 `(128, 128, 1)` 형태로 차원을 추가합니다. |
 
----
+#### 📘 (2) EDA 및 성능 평가
 
-## 5. 기술 스택  
+* **학습 과정 분석:** `matplotlib`을 사용하여 모델 학습 중 Epoch에 따른 정확도(Accuracy) 및 손실(Loss) 그래프를 시각화합니다.
+* **성능 평가:** `scikit-learn`의 `classification_report`를 사용해 정밀도, 재현율 등을 포함한 리포트를 생성합니다.
+* **오류 분석:** `seaborn`을 활용해 혼동 행렬(Confusion Matrix)을 시각화하여 모델이 어떤 클래스를 혼동하는지 분석합니다.
+
+### 4. 기술 스택
 
 | 구분 | 기술 | 설명 |
-|------|------|------|
-| **Backend** | Python, Flask | 서버 및 API 개발 |
-| **Frontend** | HTML, CSS, JavaScript | 사용자 인터페이스 |
-| **Audio Processing** | FFmpeg, MoviePy, Librosa | 오디오 추출 및 변환 |
-| **AI/ML** | 2D CNN (TensorFlow / PyTorch 예정) | 드럼 사운드 분류 |
-| **Visualization** | MuseScore API, ReportLab | MIDI 시각화 및 PDF 생성 |
+| :--- | :--- | :--- |
+| **Backend** | `Python`, `Flask` | API 서버 개발 및 작업 큐 관리 |
+| **Frontend** | `React`, `Vite`, `axios` | 사용자 인터페이스(UI) 개발 및 서버 통신 |
+| **AI (학습)** | `TensorFlow (Keras)` | 2D CNN 모델(`Conv2D`, `MaxPooling2D`) 설계 및 학습 |
+| **AI (서빙)** | `TFLite` | `convert_model_to_lite.py`로 변환된 경량화 모델을 실제 서비스에서 사용 |
+| **AI (관리)** | `MLflow` | 모델 학습 파라미터 및 결과(아티팩트) 추적 및 관리 |
+| **음원 분리** | `Demucs` (`torch`, `torchaudio`) | 원본 오디오 파일에서 드럼 트랙을 분리 |
+| **오디오 처리** | `Librosa` | 오디오 로드, 멜 스펙트로그램 변환, Onset 탐지 등 핵심 특징 추출 |
+| **MIDI 생성** | `PrettyMIDI` | 분류된 노트 정보를 바탕으로 `.mid` 파일 생성 |
+| **악보 생성** | `Music21`, `MuseScore 3` | MIDI를 MusicXML로 변환(`Music21`)한 뒤, `MuseScore`를 `subprocess`로 호출하여 PDF 악보 생성 |
+| **배포** | `Docker` (`nvidia/cuda:11.8.0`) | 모델 변환과 실제 서비스 환경을 분리한 Multi-stage 빌드 사용 |
 
----
+### 5. 시스템 워크플로우
 
-## 6. 기타 참고사항  
-
-- **참고 데이터셋:**  
-  [Kaggle Drum Kit Sound Samples](https://www.kaggle.com/datasets/anubhavchhabra/drum-kit-sound-samples?select=overheads)  
-- **참고 논문 및 자료:**  
-  - Drum Sound Recognition using CNN (2020)  
-  - Automatic Drum Transcription using Spectrogram Analysis (ISMIR 2019)
-
----
-
-## 7. 향후 계획  
-- 데이터 증강 및 모델 학습 (10월 말)  
-- 모델 정확도 검증 및 시각화 (11월 초)  
-- Flask 서버 및 프론트엔드 통합 테스트 (11월 중순)  
-- MuseScore API 기반 악보 자동 생성 및 PDF 출력 (11월 말 완성 목표)
+1.  **파일 업로드:** 사용자가 React 프론트엔드에서 오디오 파일을 선택하고 '변환 시작' 버튼을 누릅니다.
+2.  **작업 생성:** Flask 백엔드 서버는 파일을 수신하여 고유한 `job_id`를 생성하고 비동기 처리를 시작합니다.
+3.  **드럼 분리:** `Demucs` 모델이 실행되어 업로드된 오디오에서 드럼 트랙(`drums.wav`)을 분리합니다.
+4.  **타격음 탐지:** `librosa.onset.onset_detect`를 사용해 분리된 드럼 트랙에서 개별 타격음의 시작 시간을 탐지합니다.
+5.  **AI 분류:** 탐지된 각 타격음(Onset)의 오디오 세그먼트를 (3-1)에서 설명한 전처리 과정을 거쳐 `(128, 128, 1)` 크기의 멜 스펙트로그램으로 변환하고, `TFLite` 모델에 입력하여 "kick", "snare", "hi-hat" 중 하나로 분류합니다.
+6.  **MIDI 변환:** 분류된 노트(Kick: 36, Snare: 38, Hi-hat: 42)와 타격 시간을 `pretty_midi`를 사용해 표준 MIDI 파일(`.mid`)로 조합합니다.
+7.  **PDF 악보 생성:** `music21`을 사용해 `.mid` 파일을 드럼 악보용(퍼커션 클레프, 'x' 노트 헤드 등) `MusicXML` 파일로 변환합니다. 그 후, `MuseScore 3`를 외부 프로세스로 호출하여 이 XML 파일을 최종 `.pdf` 파일로 렌더링합니다.
+8.  **결과 확인:** 프론트엔드는 작업 상태를 주기적으로 폴링(polling)하며, 작업이 'completed'가 되면 PDF 뷰어를 `iframe`으로 보여주고, MIDI 다운로드 링크를 활성화합니다.
