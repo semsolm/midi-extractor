@@ -1,11 +1,10 @@
-// src/App.js
 import React, { useState } from 'react';
 import './App.css'; // 스타일 파일 import
 import * as api from './services/api'; // Api 내에 UI 코드 없음
 import { UploadForm } from './components/UploadForm.jsx';
 import { StatusTracker } from './components/StatusTracker.jsx';
 import { ResultDisplay } from './components/ResultDisplay.jsx';
-import drummerImg from './assets/drummer.png'; // 이미지 파일 import
+import drummerImg from './assets/drummer2.png'; // 이미지 파일 import
 
 function App() {
   // 'idle', 'uploading', 'processing', 'completed', 'error'
@@ -54,12 +53,12 @@ function App() {
       case 'idle':
       case 'uploading':
         return (
-          <UploadForm 
-            onUpload={handleUpload} 
-            isLoading={uiState === 'uploading'} 
+          <UploadForm
+            onUpload={handleUpload}
+            isLoading={uiState === 'uploading'}
           />
         );
-      
+
       case 'processing':
         return (
           <StatusTracker
@@ -71,12 +70,12 @@ function App() {
 
       case 'completed':
         return (
-          <ResultDisplay 
-            results={jobResult} 
-            onReset={handleReset} 
+          <ResultDisplay
+            results={jobResult}
+            onReset={handleReset}
           />
         );
-        
+
       case 'error':
         return (
           <div className="status-container">
@@ -95,27 +94,25 @@ function App() {
   };
 
   return (
-    // [수정] 여러 요소를 반환하기 위해 Fragment(<></>)로 감쌉니다.
     <>
       <div className="container">
-        {/* drummer.png는 frontend/assets/ 폴더 내에 있어야 합니다. */}
-        <img src={drummerImg} alt="드럼 치는 사람" /> 
-        <h1>드럼 사운드 자동 분류 및 악보 생성 시스템</h1>
+        {/* 'logo-above-title' 이미지를 제거하고, <h1> 안에 이미지 재삽입 */}
+        <h1>
+          <img src={drummerImg} alt="드럼 아이콘" className="title-icon" />
+          드럼 사운드 자동 분류 및 악보 생성 시스템
+        </h1>
         <p className="subtitle">파일 전송 후 변환 완료 시 다운로드가 가능합니다.</p>
-        
+
         {renderContent()}
       </div>
 
       {/* --- [신규] 하단 푸터 추가 --- */}
       <footer className="app-footer">
         <p>
-          {/* (추후 개인정보처리방침을 만들면 링크 추가) */}
-          <a href="https://github.com/semsolm/midi-extractor/blob/main/readme.md" target="_blank" rel="noopener noreferrer">개인정보처리방침 </a> | 
-          {/* (팀 GitHub 리포지토리의 Issues 탭 주소로 변경하세요) */}
+          <a href="https://github.com/semsolm/midi-extractor/blob/main/readme.md" target="_blank" rel="noopener noreferrer">개인정보처리방침 </a> |
           <a href="https://github.com/semsolm/midi-extractor/issues" target="_blank" rel="noopener noreferrer">오류/건의</a>
         </p>
-        
-        {/* 예시 이미지의 스타일을 적용 */}
+
         <p>Copyright © 2025. Team 경로당. All Rights Reserved.</p>
         <p>
           본 시스템은 [안양대학교 캡스톤 디자인 수업] 의 팀 프로젝트로 제작되었습니다.
