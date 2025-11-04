@@ -1,121 +1,227 @@
-# modeling/scripts/train.py
 import os
 import sys
 import mlflow
 import mlflow.keras
-from sklearn.model_selection import train_test_split
-from tensorflow.keras.callbacks import EarlyStopping
 from pathlib import Path
+from sklearn.model_selection import train_test_split
+from tensorflow.keras.callbacks import EarlyStopping, Callback
+from sklearn.metrics import f1_score, hamming_loss, jaccard_score
+import numpy as np
+import tensorflow as tf
 
-# src 폴더를 파이썬 경로에 추가하여 모듈 import
+
+# src 폴더를 파이썬 경로에 추가
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.data_utils import load_processed_data
 from src.model import build_cnn_model
 
+# --- 경로 설정(현재 파일 경로) ---
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..', '..'))
 
-# 모델 저장 디렉토리
-OUTPUT_MODEL_DIR = "../outputs/models"
-OUTPUT_MODEL_NAME = "drum_cnn_final.keras" # .h5 대신 최신 .keras 포맷 사용
-
-# --- MLflow 중앙 저장소 설정 ---
-# 이 스크립트(train.py)의 위치는 backend/modeling/scripts/ 입니다.
-# 우리는 3단계 상위 폴더인 프로젝트 루트(semsolm/midi-extractor-dev)에 있는
-# mlruns 폴더를 중앙 저장소로 사용할 것입니다.
-try:
-    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-    PROJECT_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..', '..'))
-    MLRUNS_DIR = os.path.join(PROJECT_ROOT, "mlruns")
-
-    # MLflow가 파일 경로를 인식할 수 있도록 URI 형식(file://...)으로 변환
-    MLFLOW_TRACKING_URI = Path(MLRUNS_DIR).as_uri()
-
-    # MLflow에게 "모든 데이터를 이 URI에 저장하라"고 명시적으로 지시
-    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-    print(f"MLflow 추적 URI가 설정되었습니다: {MLFLOW_TRACKING_URI}")
-
-except Exception as e:
-    print(f"MLflow 추적 URI 설정 중 오류 발생: {e}")
-    print("스크립트를 계속 진행하지만, MLflow 저장이 기본 위치에 될 수 있습니다.")
-# ---
-
-# --- 설정 ---
+# ⚠️ 중요: 멀티라벨 데이터 경로로 변경!
 DATA_PATH = os.path.join(PROJECT_ROOT, "backend", "modeling", "data", "raw")
-NUM_CLASSES = 3 # 드럼 소리 클래스 수
+
+# MLflow 설정
+MLRUNS_DIR = os.path.join(PROJECT_ROOT, "mlruns")
+MLFLOW_TRACKING_URI = Path(MLRUNS_DIR).as_uri()
+
+# 모델 저장 경로
+OUTPUT_MODEL_DIR = os.path.join(PROJECT_ROOT, "backend", "modeling", "outputs", "sig_model")
+OUTPUT_MODEL_NAME = "drum_multilabel_cnn.keras"
+
+# --- 모델 설정 ---
+NUM_CLASSES = 3  # kick, snare, hihat
 INPUT_SHAPE = (128, 128, 1)
 
-# 상대 경로('../outputs/models') 대신 PROJECT_ROOT를 기준으로 하는 절대 경로 사용
-OUTPUT_MODEL_DIR = os.path.join(PROJECT_ROOT, "backend", "modeling", "outputs", "models")
-OUTPUT_MODEL_NAME = "drum_cnn_final.keras" # .h5 대신 최신 .keras 포맷 사용
-
 # --- MLflow 설정 ---
-# 실험 이름 설정 (MLflow UI에 표시될 이름)
-mlflow.set_experiment("Drum Sound Classification")
+try:
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+    print(f"MLflow 추적 URI: {MLFLOW_TRACKING_URI}")
+except Exception as e:
+    print(f"MLflow 설정 오류: {e}")
+
+mlflow.set_experiment("Drum Multilabel Classification")
+
+
+# ---------- 커스텀 콜백: 멀티라벨 메트릭 로깅 ----------
+class MultilabelMetricsCallback(Callback):
+    def __init__(self, X_val, y_val, threshold=0.5):
+        super().__init__()
+        self.X_val = X_val
+        self.y_val = y_val
+        self.threshold = threshold
+
+    def on_epoch_end(self, epoch, logs=None):
+        prob = self.model.predict(self.X_val, verbose=0)
+        pred = (prob > self.threshold).astype(int)
+
+        # F1 스코어 (여러 방식)
+        f1_micro = f1_score(self.y_val, pred, average='micro', zero_division=0)
+        f1_macro = f1_score(self.y_val, pred, average='macro', zero_division=0)
+        f1_samples = f1_score(self.y_val, pred, average='samples', zero_division=0)
+
+        # Hamming Loss (멀티라벨용 정확도)
+        h_loss = hamming_loss(self.y_val, pred)
+
+        # Jaccard Score (IoU)
+        jaccard = jaccard_score(self.y_val, pred, average='samples', zero_division=0)
+
+        mlflow.log_metric("val_f1_micro", float(f1_micro), step=epoch)
+        mlflow.log_metric("val_f1_macro", float(f1_macro), step=epoch)
+        mlflow.log_metric("val_f1_samples", float(f1_samples), step=epoch)
+        mlflow.log_metric("val_hamming_loss", float(h_loss), step=epoch)
+        mlflow.log_metric("val_jaccard", float(jaccard), step=epoch)
+
+
+# -----------------------------------------------------
+
 
 # --- 1. 데이터 로드 및 분할 ---
-print(f"({DATA_PATH}) 데이터 로딩 중...")
+print(f"\n{'=' * 60}")
+print(f"멀티라벨 드럼 분류 모델 학습")
+print(f"{'=' * 60}\n")
+
 X, y = load_processed_data(DATA_PATH)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
-print(f"훈련 데이터: {X_train.shape}, 테스트 데이터: {X_test.shape}")
+
+# 데이터 검증
+assert len(y.shape) == 2, f"y는 2D 배열이어야 합니다. 현재: {y.shape}"
+assert y.shape[1] == NUM_CLASSES, f"라벨 수 불일치. 예상: {NUM_CLASSES}, 실제: {y.shape[1]}"
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=None  # 멀티라벨은 stratify 사용 어려움
+)
+
+print(f"\n데이터 분할:")
+print(f"  훈련: {X_train.shape}, {y_train.shape}")
+print(f"  테스트: {X_test.shape}, {y_test.shape}")
+
+# 라벨 분포 확인
+print(f"\n라벨 분포:")
+print(f"  전체 - Kick: {y.sum(axis=0)[0]}, Snare: {y.sum(axis=0)[1]}, Hihat: {y.sum(axis=0)[2]}")
+print(f"  훈련 - Kick: {y_train.sum(axis=0)[0]}, Snare: {y_train.sum(axis=0)[1]}, Hihat: {y_train.sum(axis=0)[2]}")
 
 # --- 2. MLflow 실행 시작 ---
-# 이 블록 안의 모든 학습 과정이 MLflow에 기록됩니다.
-with mlflow.start_run():
-    # 데이터셋의 출처와 버전을 파라미터로 기록
-    mlflow.log_param("dataset_source_url", "https://www.kaggle.com/datasets/anubhavchhabra/drum-kit-sound-samples")
-    mlflow.log_param("dataset_version", "1.0_downloaded_2025-10-24")
+with mlflow.start_run(run_name="multilabel_sigmoid"):
+    mlflow.keras.autolog(log_models=False)  # 모델은 수동으로 저장
 
-    # --- 하이퍼파라미터 설정 및 기록 ---
+    # 파라미터 로깅
     epochs = 50
     batch_size = 32
-    learning_rate = 0.0005
+    learning_rate = 0.001
+    threshold = 0.5
 
     mlflow.log_param("epochs", epochs)
     mlflow.log_param("batch_size", batch_size)
     mlflow.log_param("learning_rate", learning_rate)
+    mlflow.log_param("threshold", threshold)
+    mlflow.log_param("num_classes", NUM_CLASSES)
+    mlflow.log_param("input_shape", INPUT_SHAPE)
+    mlflow.log_param("dataset_type", "multilabel_synthetic")
 
-    # --- 학습에 사용된 원본 데이터 폴더를 'dataset'이란 이름으로 기록 ---
-    print("원본 데이터셋을 MLflow 아티팩트로 기록합니다...")
+    # 데이터셋 기록
+    print("\n원본 데이터셋을 MLflow에 기록 중...")
     mlflow.log_artifacts(DATA_PATH, artifact_path="dataset")
-    print("데이터셋 기록 완료.")
-    # ---
 
     # --- 3. 모델 생성 ---
-    print("모델 생성 중...")
+    print("\n모델 생성 중...")
     model = build_cnn_model(input_shape=INPUT_SHAPE, num_classes=NUM_CLASSES)
 
+    print("\n모델 구조:")
+    model.summary()
+
     # --- 4. 모델 학습 ---
-    print("모델 학습 시작...")
+    print(f"\n{'=' * 60}")
+    print("모델 학습 시작")
+    print(f"{'=' * 60}\n")
+
     history = model.fit(
         X_train, y_train,
         epochs=epochs,
         batch_size=batch_size,
         validation_data=(X_test, y_test),
-        callbacks=[EarlyStopping(monitor='val_loss', patience=10, verbose=1)]
+        callbacks=[
+            EarlyStopping(
+                monitor='val_loss',
+                patience=10,
+                restore_best_weights=True,
+                verbose=1
+            ),
+            MultilabelMetricsCallback(X_test, y_test, threshold=threshold)
+        ],
+        verbose=1
     )
 
-    # --- 5. 최종 성능 지표 기록 ---
-    val_loss, val_accuracy = model.evaluate(X_test, y_test)
-    mlflow.log_metric("final_val_loss", val_loss)
-    mlflow.log_metric("final_val_accuracy", val_accuracy)
+    # --- 5. 최종 평가 ---
+    print(f"\n{'=' * 60}")
+    print("최종 모델 평가")
+    print(f"{'=' * 60}\n")
 
-    # --- 6. 최종 모델을 outputs/models 디렉토리에 저장 ---
+    # 기본 메트릭
+    eval_dict = model.evaluate(X_test, y_test, return_dict=True, verbose=0)
+    for k, v in eval_dict.items():
+        mlflow.log_metric(f"final_{k}", float(v))
+        print(f"  {k}: {v:.4f}")
+
+    # 추가 멀티라벨 메트릭
+    y_pred_prob = model.predict(X_test, verbose=0)
+    y_pred = (y_pred_prob > threshold).astype(int)
+
+    f1_micro = f1_score(y_test, y_pred, average='micro', zero_division=0)
+    f1_macro = f1_score(y_test, y_pred, average='macro', zero_division=0)
+    f1_samples = f1_score(y_test, y_pred, average='samples', zero_division=0)
+    h_loss = hamming_loss(y_test, y_pred)
+    jaccard = jaccard_score(y_test, y_pred, average='samples', zero_division=0)
+
+    mlflow.log_metric("final_f1_micro", float(f1_micro))
+    mlflow.log_metric("final_f1_macro", float(f1_macro))
+    mlflow.log_metric("final_f1_samples", float(f1_samples))
+    mlflow.log_metric("final_hamming_loss", float(h_loss))
+    mlflow.log_metric("final_jaccard", float(jaccard))
+
+    print(f"\n멀티라벨 메트릭:")
+    print(f"  F1 Score (micro): {f1_micro:.4f}")
+    print(f"  F1 Score (macro): {f1_macro:.4f}")
+    print(f"  F1 Score (samples): {f1_samples:.4f}")
+    print(f"  Hamming Loss: {h_loss:.4f}")
+    print(f"  Jaccard Score: {jaccard:.4f}")
+
+    # 예측 예시 출력
+    print(f"\n예측 예시 (처음 5개):")
+    for i in range(min(5, len(y_test))):
+        true_labels = []
+        pred_labels = []
+
+        if y_test[i][0] == 1: true_labels.append("Kick")
+        if y_test[i][1] == 1: true_labels.append("Snare")
+        if y_test[i][2] == 1: true_labels.append("Hihat")
+
+        if y_pred[i][0] == 1: pred_labels.append("Kick")
+        if y_pred[i][1] == 1: pred_labels.append("Snare")
+        if y_pred[i][2] == 1: pred_labels.append("Hihat")
+
+        true_str = ', '.join(true_labels) if true_labels else 'None'
+        pred_str = ', '.join(pred_labels) if pred_labels else 'None'
+        match = "✓" if true_labels == pred_labels else "✗"
+
+        print(f"  {i + 1}. 실제: [{true_str}] / 예측: [{pred_str}] {match}")
+
+    # --- 6. 모델 저장 ---
     os.makedirs(OUTPUT_MODEL_DIR, exist_ok=True)
     final_model_path = os.path.join(OUTPUT_MODEL_DIR, OUTPUT_MODEL_NAME)
 
     try:
         model.save(final_model_path)
-        print(f"\n최종 모델이 계획된 경로에 저장되었습니다: {os.path.abspath(final_model_path)}")
-        # MLflow에도 저장된 경로를 파라미터로 기록
+        print(f"\n최종 모델 저장: {os.path.abspath(final_model_path)}")
         mlflow.log_param("saved_model_path", final_model_path)
     except Exception as e:
-        print(f"모델 파일 저장 중 오류 발생: {e}")
+        print(f"모델 저장 오류: {e}")
 
-    # --- 7. 학습된 모델을 MLflow에 아티팩트(결과물)로 저장 ---
-    mlflow.keras.log_model(
-        model,
-        name="model"
-    )
+    # MLflow에 모델 등록
+    mlflow.keras.log_model(model, artifact_path="model")
 
-    print("\nMLflow 실행 완료!")
+    print(f"\n{'=' * 60}")
+    print("학습 완료!")
     print(f"Run ID: {mlflow.active_run().info.run_id}")
+    print(f"{'=' * 60}\n")
