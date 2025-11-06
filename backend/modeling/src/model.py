@@ -1,6 +1,13 @@
 # modeling/src/model.py
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout, BatchNormalization
+from tensorflow.keras.layers import (
+    Conv2D,
+    MaxPooling2D,
+    GlobalAveragePooling2D,
+    Dense,
+    Dropout,
+    BatchNormalization,
+)
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import metrics
 
@@ -24,9 +31,11 @@ def build_cnn_model(input_shape, num_classes):
         MaxPooling2D((2, 2)),
 
         # 분류기 (Classifier)
-        Flatten(),
-        Dense(128, activation='relu'),
-        Dropout(0.5),  # 과적합 방지를 위한 드롭아웃
+        GlobalAveragePooling2D(),
+        Dense(64, activation='relu'),
+        Dropout(0.3),  # 표현력 감소에 맞춘 드롭아웃
+        Dense(32, activation='relu'),
+        Dropout(0.2),
         Dense(num_classes, activation='sigmoid')  # 최종 출력층
     ])
 
