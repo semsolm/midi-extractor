@@ -45,6 +45,27 @@ except Exception as e:
 mlflow.set_experiment("Drum Multilabel Classification")
 
 
+# ---------- 멀티라벨 메트릭 계산 헬퍼 ----------
+
+def compute_multilabel_metrics(y_true, y_prob, threshold=0.5, *, return_predictions=False):
+    """Compute multilabel classification metrics using a probability threshold."""
+
+    y_pred = (y_prob > threshold).astype(int)
+
+    metrics = {
+        "f1_micro": f1_score(y_true, y_pred, average="micro", zero_division=0),
+        "f1_macro": f1_score(y_true, y_pred, average="macro", zero_division=0),
+        "f1_samples": f1_score(y_true, y_pred, average="samples", zero_division=0),
+        "hamming_loss": hamming_loss(y_true, y_pred),
+        "jaccard": jaccard_score(y_true, y_pred, average="samples", zero_division=0),
+    }
+
+    if return_predictions:
+        return metrics, y_pred
+
+    return metrics
+
+
 # ---------- 커스텀 콜백: 멀티라벨 메트릭 로깅 ----------
 class MultilabelMetricsCallback(Callback):
     def __init__(self, X_val, y_val, threshold=0.5):
@@ -55,24 +76,10 @@ class MultilabelMetricsCallback(Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         prob = self.model.predict(self.X_val, verbose=0)
-        pred = (prob > self.threshold).astype(int)
+        metrics = compute_multilabel_metrics(self.y_val, prob, threshold=self.threshold)
 
-        # F1 스코어 (여러 방식)
-        f1_micro = f1_score(self.y_val, pred, average='micro', zero_division=0)
-        f1_macro = f1_score(self.y_val, pred, average='macro', zero_division=0)
-        f1_samples = f1_score(self.y_val, pred, average='samples', zero_division=0)
-
-        # Hamming Loss (멀티라벨용 정확도)
-        h_loss = hamming_loss(self.y_val, pred)
-
-        # Jaccard Score (IoU)
-        jaccard = jaccard_score(self.y_val, pred, average='samples', zero_division=0)
-
-        mlflow.log_metric("val_f1_micro", float(f1_micro), step=epoch)
-        mlflow.log_metric("val_f1_macro", float(f1_macro), step=epoch)
-        mlflow.log_metric("val_f1_samples", float(f1_samples), step=epoch)
-        mlflow.log_metric("val_hamming_loss", float(h_loss), step=epoch)
-        mlflow.log_metric("val_jaccard", float(jaccard), step=epoch)
+        for name, value in metrics.items():
+            mlflow.log_metric(f"val_{name}", float(value), step=epoch)
 
 
 # -----------------------------------------------------
@@ -166,26 +173,19 @@ with mlflow.start_run(run_name="multilabel_sigmoid"):
 
     # 추가 멀티라벨 메트릭
     y_pred_prob = model.predict(X_test, verbose=0)
-    y_pred = (y_pred_prob > threshold).astype(int)
+    metrics, y_pred = compute_multilabel_metrics(
+        y_test, y_pred_prob, threshold=threshold, return_predictions=True
+    )
 
-    f1_micro = f1_score(y_test, y_pred, average='micro', zero_division=0)
-    f1_macro = f1_score(y_test, y_pred, average='macro', zero_division=0)
-    f1_samples = f1_score(y_test, y_pred, average='samples', zero_division=0)
-    h_loss = hamming_loss(y_test, y_pred)
-    jaccard = jaccard_score(y_test, y_pred, average='samples', zero_division=0)
-
-    mlflow.log_metric("final_f1_micro", float(f1_micro))
-    mlflow.log_metric("final_f1_macro", float(f1_macro))
-    mlflow.log_metric("final_f1_samples", float(f1_samples))
-    mlflow.log_metric("final_hamming_loss", float(h_loss))
-    mlflow.log_metric("final_jaccard", float(jaccard))
+    for name, value in metrics.items():
+        mlflow.log_metric(f"final_{name}", float(value))
 
     print(f"\n멀티라벨 메트릭:")
-    print(f"  F1 Score (micro): {f1_micro:.4f}")
-    print(f"  F1 Score (macro): {f1_macro:.4f}")
-    print(f"  F1 Score (samples): {f1_samples:.4f}")
-    print(f"  Hamming Loss: {h_loss:.4f}")
-    print(f"  Jaccard Score: {jaccard:.4f}")
+    print(f"  F1 Score (micro): {metrics['f1_micro']:.4f}")
+    print(f"  F1 Score (macro): {metrics['f1_macro']:.4f}")
+    print(f"  F1 Score (samples): {metrics['f1_samples']:.4f}")
+    print(f"  Hamming Loss: {metrics['hamming_loss']:.4f}")
+    print(f"  Jaccard Score: {metrics['jaccard']:.4f}")
 
     # 예측 예시 출력
     print(f"\n예측 예시 (처음 5개):")
