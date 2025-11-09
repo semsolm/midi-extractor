@@ -3,37 +3,44 @@ import librosa
 import numpy as np
 import os
 
-# 멜 스펙트로그램 생성을 위한 설정값
-SR = 44100
-N_MELS = 128  # 스펙트로그램의 세로 해상도 (주파수 축)
-N_FFT = 2048
-HOP_LENGTH = 512
+# ====== 상단 설정값 교체 ======
+SR = 22050
+N_MELS = 128
+N_FFT = 1024
+HOP_LENGTH = 96   # 0.6초 → 정확히 128 프레임
 
 
 def audio_to_melspectrogram(filepath, target_shape=(N_MELS, N_MELS)):
-    """오디오 파일을 불러와 고정된 크기의 멜 스펙트로그램으로 변환합니다."""
+    """
+    오디오 → (128,128) Log-Mel(dB) → [0,1] 스케일
+    - 0.6초 샘플 기준으로 128프레임이 정확히 나오도록 파라미터 고정
+    - 프레임 부족 시 dB의 최솟값으로 패딩(가짜 에너지 방지)
+    """
     try:
-        y, sr = librosa.load(filepath, sr=SR)
+        # librosa.load: mono=True 기본, float32 반환
+        y, sr = librosa.load(filepath, sr=SR, mono=True)
 
-        # 1초 미만의 짧은 오디오는 패딩 처리
-        if len(y) < SR:
-            y = np.pad(y, (0, SR - len(y)))
-        else:
-            y = y[:SR]
-
-        mel_spec = librosa.feature.melspectrogram(
-            y=y, sr=sr, n_fft=N_FFT, hop_length=HOP_LENGTH, n_mels=N_MELS
+        # 멜스펙 계산
+        mel = librosa.feature.melspectrogram(
+            y=y, sr=sr, n_fft=N_FFT, hop_length=HOP_LENGTH, n_mels=N_MELS,
+            fmin=20, fmax=sr//2
         )
-        mel_spec_db = librosa.power_to_db(mel_spec, ref=np.max)
+        mel_db = librosa.power_to_db(mel, ref=np.max)
 
-        # 이미지 크기를 (128, 128) 등으로 고정
-        if mel_spec_db.shape[1] < target_shape[1]:
-            pad_width = target_shape[1] - mel_spec_db.shape[1]
-            mel_spec_db = np.pad(mel_spec_db, pad_width=((0, 0), (0, pad_width)), mode='constant')
-        else:
-            mel_spec_db = mel_spec_db[:, :target_shape[1]]
+        # 시간 축 길이 맞추기 (128 프레임)
+        T = mel_db.shape[1]
+        if T < target_shape[1]:
+            pad_T = target_shape[1] - T
+            pad_val = float(mel_db.min())  # dB 스케일의 최솟값으로 패딩
+            mel_db = np.pad(mel_db, ((0,0),(0,pad_T)), mode='constant', constant_values=pad_val)
+        elif T > target_shape[1]:
+            mel_db = mel_db[:, :target_shape[1]]
 
-        return mel_spec_db
+        # [0,1] 정규화 (샘플 단위)
+        mn, mx = float(mel_db.min()), float(mel_db.max())
+        mel_01 = (mel_db - mn) / (mx - mn + 1e-6)
+
+        return mel_01.astype(np.float32)
     except Exception as e:
         print(f"파일 처리 오류 {filepath}: {e}")
         return None
@@ -106,7 +113,7 @@ def load_processed_data(data_dir):
 
         # 파일 개수 카운트
         audio_files = [f for f in os.listdir(class_path)
-                       if f.endswith(('.wav', '.mp3', '.flac', 'wav'))]
+                       if f.lower().endswith(('.wav', '.mp3', '.flac'))]
 
         print(f"📁 {folder_name:20s} → {label_vector} ({len(audio_files)}개 파일)")
 
@@ -117,8 +124,8 @@ def load_processed_data(data_dir):
                 X.append(spec)
                 y.append(label_vector)
 
-    X = np.array(X)[..., np.newaxis]
-    y = np.array(y, dtype=np.float32)  # 멀티라벨은 float32
+    X = np.array(X, dtype=np.float32)[..., np.newaxis]  # (N,128,128,1)
+    y = np.array(y, dtype=np.float32)
 
     print("-" * 50)
     print(f"✅ 데이터 로딩 완료")
