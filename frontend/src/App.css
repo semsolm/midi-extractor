@@ -40,12 +40,12 @@ body {
 }
 
 .app-logo {
-  font-size: 1.6em;
+  font-size: 1.9em;
 }
 
 .app-title {
-  font-size: 1.1em;
-  font-weight: 700;
+  font-size: 1.9em;
+  font-weight: 600;
   color: #111827;
 }
 
@@ -293,4 +293,27 @@ button:hover:not(.nav-button),
     padding: 50px 25px;
     max-width: 95%;
   }
+}
+
+/* 진행률 바 스타일 */
+.progress-bar {
+  width: 100%;
+  height: 18px;
+  background-color: #eee;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #4CAF50;
+  transition: width 0.4s ease;
+}
+
+.progress-text {
+  text-align: center;
+  margin-top: 5px;
+  font-weight: bold;
+  color: #333;
 }

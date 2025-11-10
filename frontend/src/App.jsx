@@ -4,8 +4,7 @@ import * as api from './services/api'; // Api 내에 UI 코드 없음 (가정)
 import { UploadForm } from './components/UploadForm.jsx';
 import { StatusTracker } from './components/StatusTracker.jsx';
 import { ResultDisplay } from './components/ResultDisplay.jsx';
-
-
+import imi from "./assets/imi.png";
 // [신규] 메뉴별 컴포넌트 더미 (기능 구현 시 실제 컴포넌트로 대체)
 const MidiToPdfView = () => (
   <div className="menu-view">
@@ -18,6 +17,7 @@ const MidiToPdfView = () => (
 const HelpView = () => (
   <div className="menu-view">
     <h3>도움말 및 정보</h3>
+
     <p>
       본 시스템은 드럼 오디오를 MIDI와 악보로 자동 변환하는 AI 기반 프로젝트입니다.<br/>
       자세한 내용은 <a href="https://github.com/semsolm/midi-extractor" target="_blank" rel="noopener noreferrer">GitHub 프로젝트 페이지</a>를 확인해주세요.
@@ -29,6 +29,7 @@ const HelpView = () => (
 const APP_FOOTER_CONTENT = (
     <>
         <p className="footer-links"> {/* 신규 클래스 추가로 가독성 향상 */}
+
             <a href="https://github.com/semsolm/midi-extractor/blob/main/readme.md" target="_blank" rel="noopener noreferrer">개인정보처리방침 </a> |
             <a href="https://github.com/semsolm/midi-extractor/issues" target="_blank" rel="noopener noreferrer">오류/건의</a>
         </p>
@@ -37,6 +38,7 @@ const APP_FOOTER_CONTENT = (
         <p>
             본 시스템은 [안양대학교 캡스톤 디자인 수업] 의 팀 프로젝트로 제작되었습니다.
         </p>
+
         <p className="footer-disclaimer"> {/* 신규 클래스 추가로 가독성 향상 */}
             본 시스템은 학습 및 비영리 목적으로만 무료로 사용할 수 있습니다.<br />
             생성된 악보의 정확성을 보장하지 않으며, 사용으로 인한 법적 책임을 지지 않습니다.
@@ -72,6 +74,9 @@ function App() {
       setUiState('error');
     }
   };
+
+
+
 
   // 2. StatusTracker가 'completed' 상태를 감지했을 때
   const handleProcessingComplete = (results) => {
@@ -155,8 +160,9 @@ function App() {
       case 'mp3 to midi':
         return (
           <>
-            <h2 className="main-title">드럼 사운드 자동 분류 및 악보 생성</h2>
-            <p className="subtitle">파일 전송 후 변환 완료 시 다운로드가 가능합니다.</p>
+            <h2 className="main-title">Mp3 to Midi</h2>
+            <p className="subtitle">.</p>
+            <p className = "subtitle"> .</p>
             {renderMainContent()}
           </>
         );
@@ -182,7 +188,7 @@ function App() {
             title="홈으로 이동"
           >
             <span className="app-logo" role="img" aria-label="drum">🎵</span>
-            <span className="app-title">MidiToPdfView</span>
+            <span className="app-title">Midi-extractor</span>
           </div>
 
           <nav className="header-nav">
@@ -205,6 +211,7 @@ function App() {
       </div>
 
       <footer className="app-footer">
+
         {APP_FOOTER_CONTENT}
       </footer>
     </>

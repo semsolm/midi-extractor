@@ -13,7 +13,7 @@ export function StatusTracker({ jobId, onComplete, onError }) {
     const checkStatus = async () => {
       try {
         const data = await api.getJobStatus(jobId);
-        
+
         // audio_processor.py의 tqdm 메시지 등을 그대로 표시
         setStatusMessage(data.message || '상태 확인 중...');
 
@@ -32,7 +32,7 @@ export function StatusTracker({ jobId, onComplete, onError }) {
     };
 
     // 1.5초마다 상태 확인
-    intervalRef.current = setInterval(checkStatus, 1500);
+    intervalRef.current = setInterval(checkStatus, 1000);
 
     // 컴포넌트 unmount 시 interval 정리
     return () => clearInterval(intervalRef.current);
