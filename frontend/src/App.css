@@ -317,3 +317,11 @@ button:hover:not(.nav-button),
   font-weight: bold;
   color: #333;
 }
+
+#startButton {
+  display: block; 
+  width: 100%;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
