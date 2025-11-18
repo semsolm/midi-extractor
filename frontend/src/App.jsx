@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css'; // 스타일 파일 import
 import * as api from './services/api'; // Api 내에 UI 코드 없음 (가정)
 import { UploadForm } from './components/UploadForm.jsx';
@@ -56,6 +56,29 @@ function App() {
 
   // 🌟 [신규] 상단바 메뉴 상태: 'mp3 to midi', 'midi to pdf', 'help'
   const [currentMenu, setCurrentMenu] = useState('mp3 to midi');
+
+  // 🌙 다크모드 상태
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    // localStorage에서 다크모드 설정 불러오기
+    const saved = localStorage.getItem('darkMode');
+    return saved ? JSON.parse(saved) : false;
+  });
+
+  // 다크모드 토글 함수
+  const toggleDarkMode = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    localStorage.setItem('darkMode', JSON.stringify(newMode));
+  };
+
+  // 다크모드 클래스 적용
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark-mode');
+    } else {
+      document.documentElement.classList.remove('dark-mode');
+    }
+  }, [isDarkMode]);
 
 
 
@@ -201,6 +224,20 @@ function App() {
                 {menu}
               </button>
             ))}
+            
+            {/* 다크모드 토글 스위치 */}
+            <div className="dark-mode-toggle-wrapper">
+              <div className="checkbox model-1">
+                <input
+                  type="checkbox"
+                  id="dark-mode-toggle"
+                  checked={isDarkMode}
+                  onChange={toggleDarkMode}
+                  aria-label={isDarkMode ? '라이트 모드로 전환' : '다크 모드로 전환'}
+                />
+                <label htmlFor="dark-mode-toggle"></label>
+              </div>
+            </div>
           </nav>
 
         </div>

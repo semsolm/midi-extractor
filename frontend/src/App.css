@@ -5,6 +5,13 @@ body {
   background-color: #e3e4e6; /* 🔹 사이트 전체 배경 밝은 회색으로 변경 */
   font-family: 'Segoe UI', Roboto, sans-serif;
   color: #333;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 다크모드 전역 스타일 */
+.dark-mode body {
+  background-color: #1a1a1a;
+  color: #e5e5e5;
 }
 
 #root {
@@ -53,6 +60,89 @@ body {
 .header-nav {
   display: flex;
   gap: 8px;
+  align-items: center;
+}
+
+/* 다크모드 토글 스위치 */
+.dark-mode-toggle-wrapper {
+  display: flex;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.checkbox {
+  position: relative;
+  display: inline-block;
+}
+
+.checkbox label {
+  width: 90px;
+  height: 42px;
+  background: #ccc;
+  position: relative;
+  display: inline-block;
+  border-radius: 46px;
+  transition: 0.4s;
+  cursor: pointer;
+}
+
+.checkbox label:after {
+  content: '';
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  border-radius: 100%;
+  left: 0;
+  top: -5px;
+  z-index: 2;
+  background: #fff;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  transition: 0.4s;
+}
+
+.checkbox input {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.checkbox input:hover + label:after {
+  box-shadow: 0 2px 15px 0 rgba(0, 0, 0, 0.2), 0 3px 8px 0 rgba(0, 0, 0, 0.15);
+}
+
+.checkbox input:checked + label:after {
+  left: 40px;
+}
+
+/* 모델 1 스타일 (파란색) */
+.model-1 .checkbox input:checked + label {
+  background: #357abd;
+}
+
+.model-1 .checkbox input:checked + label:after {
+  background: #4285F4;
+}
+
+/* 다크모드에서 토글 스위치 색상 조정 */
+.dark-mode .checkbox label {
+  background: #555;
+}
+
+.dark-mode .checkbox label:after {
+  background: #888;
+}
+
+.dark-mode .model-1 .checkbox input:checked + label {
+  background: #2a5a8a;
+}
+
+.dark-mode .model-1 .checkbox input:checked + label:after {
+  background: #5a9df4;
 }
 
 /* 메뉴 버튼 */
@@ -85,7 +175,7 @@ body {
   border-radius: 24px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   padding: 70px 80px;
-  max-width: 950px;
+  max-width: 1200px;
   margin: 60px auto;
   text-align: center;
   transition: all 0.3s ease;
@@ -167,6 +257,7 @@ button,
   color: white;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transition: all 0.25s ease;
+  box-sizing: border-box;
 }
 
 button:hover:not(.nav-button),
@@ -182,6 +273,18 @@ button:hover:not(.nav-button),
   margin-top: 30px;
 }
 
+.status-success {
+  background-color: #d1fae5;
+  color: #065f46;
+  padding: 16px;
+  border-radius: 14px;
+  margin-top: 30px;
+  margin-bottom: 0;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  font-weight: 600;
+  text-align: center;
+}
+
 .status-error {
   background-color: #fee2e2;
   color: #991b1b;
@@ -189,6 +292,81 @@ button:hover:not(.nav-button),
   border-radius: 14px;
   margin-bottom: 20px;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* === 📄 결과 레이아웃 (2열: PDF 뷰어 왼쪽 + 다운로드 버튼 오른쪽) === */
+.result-layout {
+  display: flex;
+  gap: 30px;
+  margin-top: 0;
+  align-items: flex-start;
+}
+
+/* 왼쪽: PDF 뷰어 섹션 (크게) */
+.pdf-viewer-section {
+  flex: 1;
+  min-width: 0; /* flexbox에서 overflow 방지 */
+}
+
+#pdfViewerContainer {
+  width: 100%;
+  height: 800px;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  background-color: #f9fafb;
+}
+
+#pdfViewer {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* 오른쪽: 다운로드 버튼 섹션 */
+.download-section {
+  flex: 0 0 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.controls .download-link {
+  width: 100%;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+  box-sizing: border-box;
+}
+
+.reset-button {
+  width: 100%;
+  display: block;
+  box-sizing: border-box;
+  padding: 18px 26px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  background-color: #f3f4f6 !important;
+  color: #374151 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.25s ease;
+  margin: 20px auto 0 auto;
+}
+
+.reset-button:hover {
+  background-color: #e5e7eb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* === ✅ 결과창 === */
@@ -255,8 +433,48 @@ button:hover:not(.nav-button),
   margin-top: 15px;
 }
 
+/* === 📄 PDF 뷰어 표시 제어 === */
+/* 데스크톱에서만 PDF 뷰어 표시 */
+.pdf-viewer-desktop-only {
+  display: block;
+}
+
+/* 모바일에서만 PDF 보기 버튼 표시 */
+.pdf-viewer-mobile-only {
+  display: none;
+}
+
 /* === 📱 모바일 반응형 === */
 @media (max-width: 600px) {
+  /* 모바일에서 PDF 뷰어 숨기기 */
+  .pdf-viewer-desktop-only {
+    display: none !important;
+  }
+
+  /* 모바일에서 PDF 보기 버튼 표시 - controls 안의 버튼들과 동일한 스타일 */
+  .pdf-viewer-mobile-only {
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+    text-decoration: none !important;
+  }
+  
+  /* 모바일에서 PDF 뷰어 섹션을 controls와 동일하게 스타일링 */
+  .pdf-viewer-section {
+    width: 100%;
+  }
+  
+  /* 모바일에서 PDF 보기 버튼을 controls의 download-link와 완전히 동일하게 */
+  .pdf-viewer-section .pdf-viewer-mobile-only,
+  .pdf-viewer-section .download-link {
+    width: 100% !important;
+    display: block !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+    text-decoration: none !important;
+  }
+
   .container {
     padding: 30px 22px;
     width: 95%;
@@ -293,6 +511,26 @@ button:hover:not(.nav-button),
     padding: 50px 25px;
     max-width: 95%;
   }
+
+  /* 모바일: 결과 레이아웃을 세로로 변경 */
+  .result-layout {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  /* 모바일에서 PDF 뷰어 섹션과 다운로드 섹션 사이 간격 조정 */
+  .pdf-viewer-section {
+    margin-bottom: 0;
+  }
+
+  .download-section {
+    flex: 1;
+    width: 100%;
+  }
+
+  #pdfViewerContainer {
+    height: 400px;
+  }
 }
 
 /* 진행률 바 스타일 */
@@ -324,4 +562,118 @@ button:hover:not(.nav-button),
   max-width: 900px;
   margin-left: auto;
   margin-right: auto;
+}
+
+/* === 🌙 다크모드 스타일 === */
+.dark-mode .app-header {
+  background-color: #2a2a2a;
+  border-bottom: 1px solid #404040;
+  color: #e5e5e5;
+}
+
+.dark-mode .app-title {
+  color: #e5e5e5;
+}
+
+.dark-mode .header-nav .nav-button {
+  color: #b0b0b0;
+}
+
+.dark-mode .header-nav .nav-button:hover {
+  background-color: #3a3a3a;
+  color: #e5e5e5;
+}
+
+.dark-mode .header-nav .nav-button.active {
+  background-color: #404040;
+  color: #e5e5e5;
+}
+
+.dark-mode .container {
+  background: #2d2d2d;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .main-title {
+  color: #e5e5e5;
+}
+
+.dark-mode .subtitle {
+  color: #b0b0b0;
+}
+
+.dark-mode .drop-zone {
+  border-color: #555;
+  background-color: #333;
+  color: #b0b0b0;
+}
+
+.dark-mode .drop-zone.active {
+  background-color: #3a3a3a;
+  border-color: #0092B8;
+  color: #e5e5e5;
+}
+
+.dark-mode input[type="file"] {
+  border-color: #555;
+  background-color: #333;
+  color: #e5e5e5;
+}
+
+.dark-mode input[type="file"]:hover {
+  border-color: #777;
+}
+
+.dark-mode .status-success {
+  background-color: #1a4d3a;
+  color: #4ade80;
+}
+
+.dark-mode .status-error {
+  background-color: #4a1a1a;
+  color: #f87171;
+}
+
+.dark-mode #pdfViewerContainer {
+  border-color: #555;
+  background-color: #1a1a1a;
+}
+
+.dark-mode .reset-button {
+  background-color: #3a3a3a !important;
+  color: #e5e5e5 !important;
+}
+
+.dark-mode .reset-button:hover {
+  background-color: #4a4a4a !important;
+}
+
+.dark-mode .menu-view {
+  background: #2d2d2d;
+}
+
+.dark-mode .menu-view h3 {
+  color: #e5e5e5;
+}
+
+.dark-mode .menu-view p {
+  color: #b0b0b0;
+}
+
+.dark-mode .app-footer {
+  background-color: #1a1a1a;
+  border-top: 1px solid #404040;
+  color: #b0b0b0;
+}
+
+.dark-mode .app-footer a {
+  color: #888;
+}
+
+.dark-mode .app-footer a:hover {
+  color: #e5e5e5;
+}
+
+.dark-mode .app-footer .footer-disclaimer {
+  color: #666;
 }
