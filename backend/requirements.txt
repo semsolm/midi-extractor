@@ -1,23 +1,23 @@
-# backend/requirements.txt (torch 2.0.0으로 버전 고정)
+# Web Framework
+Flask==3.0.0
+Flask-Cors==4.0.0
+werkzeug==3.0.1
+gunicorn==21.2.0
 
-# --- 1. GPU 인덱스 (본인의 PC의 장착된 GPU CUDA 활성화) ---
-# MX250 (CUDA 11.8)에 맞는 PyTorch 저장소
---extra-index-url https://download.pytorch.org/whl/cu118
-
-# --- 2. Flask 서버 ---
-flask==3.0.3
-
-# --- 3. AI 핵심 로직 ---
-torch==2.0.0
-torchaudio==2.0.1
-
-# demucs는 위 버전에 맞춰서 설치됨
-demucs==4.0.1
-tensorflow
-
-# --- 4. 오디오 및 유틸리티 ---
-librosa==0.11.0
-pretty_midi==0.2.11
+# Audio Processing & Music
+numpy==1.26.2
+librosa==0.10.1
+soundfile==0.12.1
+pretty_midi==0.2.10
 music21==9.1.0
-numpy==1.26.4
-tqdm
+demucs==4.0.1
+
+# Deep Learning (PyTorch CPU version recommended for standard containers)
+# GPU 사용 시 docker command에서 변경 가능
+torch==2.1.2
+torchaudio==2.1.2
+
+# Utilities
+tqdm==4.66.1
+python-dotenv==1.0.0
+requests==2.31.0
