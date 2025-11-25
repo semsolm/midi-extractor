@@ -67,7 +67,7 @@ body {
 .dark-mode-toggle-wrapper {
   display: flex;
   align-items: center;
-  margin-left: 8px;
+  margin-left: 12px;
 }
 
 .checkbox {
@@ -75,74 +75,63 @@ body {
   display: inline-block;
 }
 
-.checkbox label {
-  width: 90px;
-  height: 42px;
-  background: #ccc;
-  position: relative;
-  display: inline-block;
-  border-radius: 46px;
-  transition: 0.4s;
-  cursor: pointer;
-}
-
-.checkbox label:after {
-  content: '';
-  position: absolute;
-  width: 50px;
-  height: 50px;
-  border-radius: 100%;
-  left: 0;
-  top: -5px;
-  z-index: 2;
-  background: #fff;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-  transition: 0.4s;
-}
-
+/* 숨겨진 체크박스 (기능만 담당) */
 .checkbox input {
   position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 5;
   opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* 🛤️ 트랙 (배경) 스타일 */
+.checkbox label {
+  width: 80px;
+  height: 40px;
+  border-radius: 50px;
+  position: relative;
+  display: inline-block;
   cursor: pointer;
+  transition: all 0.4s ease;
+  
+  /* ☀️ 라이트 모드 배경: 맑은 하늘색 */
+  background: #87CEEB; 
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.1);
 }
 
-.checkbox input:hover + label:after {
-  box-shadow: 0 2px 15px 0 rgba(0, 0, 0, 0.2), 0 3px 8px 0 rgba(0, 0, 0, 0.15);
+/* 🔘 썸(Thumb/움직이는 원) 스타일 */
+.checkbox label:after {
+  content: '☀️'; /* 기본: 해 아이콘 */
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #FFD700; /* 해 색상: 노란색 */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* 팅겨나가는 듯한 애니메이션 */
+  
+  /* 아이콘 정렬 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 0; /* 이모지 수직 정렬 보정 */
 }
 
+/* ✅ 체크되었을 때 (다크 모드 활성화) */
+
+/* 🌌 다크 모드 배경: 밤하늘색 */
+.checkbox input:checked + label {
+  background: #2C3E50; 
+}
+
+/* 🌙 다크 모드 썸: 달 아이콘으로 변경 및 이동 */
 .checkbox input:checked + label:after {
-  left: 40px;
-}
-
-/* 모델 1 스타일 (파란색) */
-.model-1 .checkbox input:checked + label {
-  background: #357abd;
-}
-
-.model-1 .checkbox input:checked + label:after {
-  background: #4285F4;
-}
-
-/* 다크모드에서 토글 스위치 색상 조정 */
-.dark-mode .checkbox label {
-  background: #555;
-}
-
-.dark-mode .checkbox label:after {
-  background: #888;
-}
-
-.dark-mode .model-1 .checkbox input:checked + label {
-  background: #2a5a8a;
-}
-
-.dark-mode .model-1 .checkbox input:checked + label:after {
-  background: #5a9df4;
+  content: '🌙'; /* 달 아이콘으로 변경 */
+  left: 42px;    /* 오른쪽으로 이동 (80px - 34px - 4px) */
+  background: #F0F3F4; /* 달 색상: 흰색/회색 */
+  transform: rotate(360deg); /* 회전 효과 추가 */
 }
 
 /* 메뉴 버튼 */
@@ -445,29 +434,6 @@ button:hover:not(.nav-button),
   box-sizing: border-box;
 }
 
-/* .reset-button {
-  width: 100%;
-  display: block;
-  box-sizing: border-box;
-  padding: 18px 26px;
-  font-size: 1.05rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 16px;
-  cursor: pointer;
-  background-color: #f3f4f6 !important;
-  color: #374151 !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: all 0.25s ease;
-  margin: 20px auto 0 auto;
-}
-
-.reset-button:hover {
-  background-color: #e5e7eb;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-} */
-
 /* === ✅ 결과창 === */
 .result-container {
   border-radius: 18px;
@@ -654,14 +620,6 @@ button:hover:not(.nav-button),
   font-weight: bold;
   color: #333;
 }
-
-/* #startButton {
-  display: block; 
-  width: 100%;
-  max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
-} */
 
 /*버튼 파티클 효과*/
 particle {
