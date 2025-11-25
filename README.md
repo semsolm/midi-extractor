@@ -10,7 +10,7 @@
 | 윤상일 | 2020E7424 | AI/ML | [@semsolm](https://github.com/semsolm) | 모델 설계 및 학습 |
 | 양태양 | 2021E7411 | Frontend | [@sunning838](https://github.com/sunning838)| UI 개발 |
 | 최유진 | 2023E7518 | Frontend | [@cyj4795](https://github.com/cyj4795) | UI 디자인 |
-| 이준행 | 2020E7427 | Backend | [@LeopoldBloom2K](https://github.com/LeopoldBloom2K) |AI, 풀스택|
+| 이준행 | 2020E7427 | PM | [@LeopoldBloom2K](https://github.com/LeopoldBloom2K) | 백엔드 |
 | 정서영 | 2020U2329 | Backend | [@jwy23190](https://github.com/jwy23190) | 백엔드, 프론트 |
 
 
