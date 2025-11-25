@@ -23,7 +23,7 @@ body {
   background-color: #f7f7f8;
   border-bottom: 1px solid #e5e7eb;
   color: #1f2937;
-  padding: 14px 24px;
+  padding: 15px 24px;
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -34,7 +34,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1100px;
+  max-width: 1370px;
   margin: 0 auto;
 }
 
@@ -94,7 +94,7 @@ body {
   transition: all 0.4s ease;
   
   /* ☀️ 라이트 모드 배경: 맑은 하늘색 */
-  background: #87CEEB; 
+  background: #e5e5e5; 
   box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -107,7 +107,7 @@ body {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: #FFD700; /* 해 색상: 노란색 */
+  background: #F0F3F4; /* 해 색상: 노란색 */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* 팅겨나가는 듯한 애니메이션 */
   
@@ -123,7 +123,7 @@ body {
 
 /* 🌌 다크 모드 배경: 밤하늘색 */
 .checkbox input:checked + label {
-  background: #2C3E50; 
+  background: #000000; 
 }
 
 /* 🌙 다크 모드 썸: 달 아이콘으로 변경 및 이동 */
@@ -743,4 +743,196 @@ particle {
 
 .dark-mode .app-footer .footer-disclaimer {
   color: #666;
+}
+
+/* ... 기존 CSS 코드 ... */
+
+/* === 📘 About Us View 스타일 (신규 추가) === */
+.about-view {
+  text-align: left;
+  width: 100%;
+  line-height: 1.6;
+}
+
+.about-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.about-section {
+  margin-bottom: 50px;
+}
+
+.section-title {
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  color: #1e3a8a;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.info-box {
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 15px;
+}
+
+.info-box p {
+  margin-bottom: 10px;
+}
+
+.info-box ul {
+  padding-left: 20px;
+  color: #4b5563;
+}
+
+/* 테이블 스타일 */
+.table-responsive {
+  overflow-x: auto;
+}
+
+.team-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+
+.team-table th {
+  background-color: #f3f4f6;
+  border-bottom: 2px solid #d1d5db;
+  padding: 12px;
+  text-align: left;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.team-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
+}
+
+/* ... 기존 CSS 코드 아래에 추가 ... */
+
+/* === 📘 About Us View 전용 스타일 === */
+
+/* 1. 전체 컨테이너 (기존 .menu-view 속성 덮어쓰기) */
+.about-view {
+  text-align: left !important; /* 왼쪽 정렬 강제 */
+  width: 100%;
+  line-height: 1.6;
+  box-sizing: border-box;
+}
+
+/* 2. 헤더 영역 */
+.about-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.about-header h2 {
+  font-size: 3rem;
+  color: #2d3748;
+  margin-bottom: 10px;
+}
+
+.about-header p {
+  font-size: 1.1rem;
+  color: #6b7280;
+}
+
+/* 3. 섹션 공통 */
+.about-section {
+  margin-bottom: 50px;
+}
+
+/* 섹션 제목 (밑줄 파란색 제목) */
+.section-title {
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  color: #1e3a8a;
+  font-size: 1.5rem; /* h3 크기 */
+  font-weight: bold;
+}
+
+/* 4. 정보 박스 (프로젝트 개요) */
+.info-box {
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.info-box p {
+  margin-bottom: 15px;
+}
+
+.info-box ul {
+  padding-left: 20px;
+  color: #4b5563;
+}
+
+/* 5. 팀원 목록 테이블 */
+.table-container {
+  overflow-x: auto; /* 모바일 대응 */
+}
+
+.team-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+
+.team-table th {
+  background-color: #f3f4f6;
+  border-bottom: 2px solid #d1d5db;
+  padding: 12px;
+  text-align: left;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+.team-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
+}
+
+/* === 🌙 다크모드 대응 (About Us) === */
+.dark-mode .about-header h2 {
+  color: #e5e5e5;
+}
+
+.dark-mode .about-header p {
+  color: #a3a3a3;
+}
+
+.dark-mode .section-title {
+  color: #93c5fd; /* 밝은 파란색 */
+  border-bottom-color: #404040;
+}
+
+.dark-mode .info-box {
+  background: #333;
+  border-color: #404040;
+}
+
+.dark-mode .info-box ul,
+.dark-mode .info-box p {
+  color: #d1d5db;
+}
+
+.dark-mode .team-table th {
+  background-color: #3a3a3a;
+  border-bottom-color: #555;
+  color: #e5e5e5;
+}
+
+.dark-mode .team-table td {
+  border-bottom-color: #404040;
+  color: #d1d5db;
 }

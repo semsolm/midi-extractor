@@ -98,14 +98,7 @@ export function UploadForm({ onUpload, isLoading }) {
           )}
         </label>
       </div>
-
-      {/* === 오디오 미리듣기 === */}
-      {audioPreview && (
-        <div id="playerContainer" style={{ display: 'block' }}>
-          <p id="listenText">들어보기 :</p>
-          <audio id="audioPlayer" controls src={audioPreview}></audio>
-        </div>
-      )}
+     
 
       {/* === 변환 시작 버튼 === */}
       <div className="controls">

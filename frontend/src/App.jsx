@@ -4,32 +4,10 @@ import * as api from './services/api'; // Api 내에 UI 코드 없음 (가정)
 import { UploadForm } from './components/UploadForm.jsx';
 import { StatusTracker } from './components/StatusTracker.jsx';
 import { ResultDisplay } from './components/ResultDisplay.jsx';
+import { AboutUsView } from './components/AboutUsView.jsx';
 import imi from "./assets/imi.png";
 // [신규] 메뉴별 컴포넌트 더미 (기능 구현 시 실제 컴포넌트로 대체)
-const AboutUsView = () => (
-  <div className="menu-view">
-    <h3>About Team 경로당 </h3>
-    <p>
-      저희는 <strong>드럼 사운드 자동 분류 및 악보 생성 AI 시스템</strong>을 개발하는
-      안양대학교 캡스톤 디자인 팀입니다.
-    </p>
-    
-    <div style={{ marginTop: '30px', textAlign: 'left', display: 'inline-block' }}>
-      <h4>👥 팀원 소개</h4>
-      <ul style={{ lineHeight: '1.8' }}>
-        <li><strong>윤상일</strong> (AI/ML): 모델 설계 및 학습</li>
-        <li><strong>양태양</strong> (Frontend): UI 개발 및 인터랙션</li>
-        <li><strong>최유진</strong> (Frontend): UI 디자인 및 기획</li>
-        <li><strong>이준행</strong> (Backend): 서버 구축 및 API 개발</li>
-        <li><strong>정서영</strong> (Backend): 데이터 관리 및 파이프라인</li>
-      </ul>
-    </div>
-
-    <p style={{ marginTop: '30px', color: '#888', fontSize: '0.9em' }}>
-      Copyright © 2025 Team 경로당. All rights reserved.
-    </p>
-  </div>
-);
+  
 
 const HelpView = () => (
   <div className="menu-view">
