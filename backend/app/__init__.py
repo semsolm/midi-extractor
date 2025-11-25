@@ -8,7 +8,7 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    CORS(app, resources={r"/api/*": {"origins": "*"}})  # [2] CORS 적용
+    CORS(app, resources={r"/*": {"origins": "*"}})  # [2] CORS 적용
     # (더 엄격하게 하려면 "origins": "http://localhost:3000"로 설정)
 
     # 설정 클래스의 init_app 메서드를 호출하여 필요한 폴더 생성

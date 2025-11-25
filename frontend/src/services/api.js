@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // 백엔드 Flask 서버 주소 (run.py에서 5000번 포트 사용)
-const API_BASE_URL = 'http://127.0.0.1:5000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
 
 /**
  * 1. 오디오 파일을 서버에 업로드하고 Job ID를 받습니다.
