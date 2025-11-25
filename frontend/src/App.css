@@ -243,10 +243,7 @@ input[type="file"]:hover {
 }
 
 /* === 🔘 버튼 === */
-button,
-.button-primary,
-.drop-button,
-.pdf-viewer-mobile-only {
+.button {
   padding: 18px 26px;
   font-size: 1.05rem;
   font-weight: 600;
@@ -260,11 +257,113 @@ button,
   box-sizing: border-box;
 }
 
+.reset-button {
+  width: 100%;
+  display: block;
+  box-sizing: border-box;
+  padding: 18px 26px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  color: white;
+  transition: all 0.25s ease;
+  margin: 20px auto 0 auto;
+  background: linear-gradient(to right, #e55d87, #5fc3e4);
+  box-shadow: 0 2px 25px rgba(229, 93, 135, 0.5);
+}
+
+.reset-button:active {
+  background: linear-gradient(
+    to right,
+    rgba(229, 93, 135, 0.9),
+    rgba(95, 195, 228, 0.9)
+  );
+}
+
+.reset-button:focus {
+  outline: none;
+}
+
+#startButton {
+  display: block;
+  width: 100%;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+
+  padding: 1em 1.5em;
+  font-size: 1em;
+  font-weight: 400;
+  font-family: "Helvetica", "Arial", sans-serif;
+  border-radius: 4px;
+  cursor: pointer;
+  appearance: none;
+  border: none;
+  color: #ffffff;
+  margin-bottom: 20px;
+  background: linear-gradient(to right, #1488cc, #2b32b2);
+  box-shadow: none;
+}
+
+#startButton:active {
+  background: linear-gradient(
+    to right,
+    rgba(20, 136, 204, 0.9),
+    rgba(43, 50, 178, 0.9)
+  );
+}
+
+#startButton:focus {
+  outline: none;
+}
+
 button:hover:not(.nav-button),
 .button-primary:hover,
 .drop-button:hover,
-.pdf-viewer-mobile-only:hover {
-  background: linear-gradient(135deg, #2d3748, #1e293b);
+.pdf-viewer-mobile-only:hover,
+#startButton:hover { /* Added #startButton for consistency */
+  filter: brightness(0.85); /* Adjust the value as desired */
+  transform: translateY(-2px);
+}
+
+
+.drop-button,
+.button-primary,
+.pdf-viewer-mobile-only {
+  padding: 1em 1.5em;
+  font-size: 1em;
+  font-weight: 400;
+  font-family: "Helvetica", "Arial", sans-serif;
+  border-radius: 4px;
+  cursor: pointer;
+  appearance: none;
+  border: none;
+  color: #ffffff;
+  margin-bottom: 20px;
+  background: linear-gradient(to right, #1488cc, #2b32b2);
+  box-shadow: none;
+}
+
+.drop-button:active {
+  background: linear-gradient(
+    to right,
+    rgba(20, 136, 204, 0.9),
+    rgba(43, 50, 178, 0.9)
+  );
+}
+
+.drop-button:focus {
+  outline: none;
+}
+
+button:hover:not(.nav-button),
+.button-primary:hover,
+.drop-button:hover,
+.pdf-viewer-mobile-only:hover,
+#startButton:hover {
+  filter: brightness(0.85);
   transform: translateY(-2px);
 }
 
@@ -346,7 +445,7 @@ button:hover:not(.nav-button),
   box-sizing: border-box;
 }
 
-.reset-button {
+/* .reset-button {
   width: 100%;
   display: block;
   box-sizing: border-box;
@@ -367,7 +466,7 @@ button:hover:not(.nav-button),
   background-color: #e5e7eb;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
+} */
 
 /* === ✅ 결과창 === */
 .result-container {
@@ -556,12 +655,22 @@ button:hover:not(.nav-button),
   color: #333;
 }
 
-#startButton {
+/* #startButton {
   display: block; 
   width: 100%;
   max-width: 900px;
   margin-left: auto;
   margin-right: auto;
+} */
+
+/*버튼 파티클 효과*/
+particle {
+  position: fixed;
+  left: 0;
+  top: 0;
+  pointer-events: none; /* 파티클이 클릭을 가로채지 않도록 설정 */
+  opacity: 0;
+  z-index: 9999;
 }
 
 /* === 🌙 다크모드 스타일 === */
