@@ -40,4 +40,4 @@ EXPOSE 5000
 # 9. 실행 명령어 (Gunicorn WSGI 서버 사용)
 # - workers: 동시 처리 프로세스 수 (CPU 코어 수에 따라 조정)
 # - timeout: 오디오 처리 및 AI 분석 시간이 길어질 수 있으므로 120초로 넉넉하게 설정
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--timeout", "120", "run:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--timeout", "120", "run:app"]
