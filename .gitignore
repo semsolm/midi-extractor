@@ -1,60 +1,41 @@
-# --- Python (Backend & AI) ---
-
-# 가상 환경
+# --- Python & System ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
 env/
 venv/
 .venv/
-
-# Python 캐시 파일
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# 민감한 환경 변수 파일
 .env
-.env.*
-instance/
 
-# IDE 및 로컬 설정
+# --- Flask & Backend Data ---
+backend/uploads/*
+backend/results/*
+!backend/uploads/.gitkeep
+!backend/results/.gitkeep
+backend/app/outputs/*
+
+# --- Large Model Files (GitHub 용량 제한 방지) ---
+*.pt
+*.pth
+*.tflite
+*.h5
+
+
+# --- Audio Files (테스트 파일 제외) ---
+*.wav
+*.mp3
+backend/separated/
+
+# --- Frontend (Node.js/React) ---
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.env
+frontend/.DS_Store
+
+# --- IDE Settings ---
 .idea/
 .vscode/
-
-# AI 모델링 결과물 (학습된 모델, 데이터)
-/backend/modeling/outputs/
-/backend/modeling/data/
-mlruns/
-
-# --- Frontend (Node.js & Vite) ---
-
-# 의존성 패키지
-node_modules/
-
-# Vite 빌드 결과물 (Vite는 'dist' 폴더를 사용)
-/frontend/dist/
-
-# React-scripts 빌드 결과물 (이전 기록)
-/frontend/build/
-
-# 로그 파일
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-*.log
-
-# PnP (Yarn)
-.pnp.*
-
-# --- 프로젝트별 생성 파일 ---
-
-# Flask 서버가 생성하는 업로드 및 결과 폴더
-uploads/
-results/
-
-# --- OS (운영체제) ---
-
-# macOS
-.DS_Store
-
-# Windows
-Thumbs.db
+*.swp

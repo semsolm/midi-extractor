@@ -2,6 +2,7 @@
 import axios from 'axios';
 
 // 백엔드 Flask 서버 주소 (run.py에서 5000번 포트 사용)
+// .env 파일에 VITE_API_URL이 있으면 그 값을 쓰고, 없으면 로컬 주소를 씁니다.
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
 
 /**

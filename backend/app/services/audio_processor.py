@@ -1,86 +1,20 @@
-# [최종 수정본] backend/app/services/audio_processor.py
+# backend/app/services/audio_processor.py
 
 import os
-import numpy as np
-import librosa
-import pretty_midi
-import csv
-import time
-import subprocess
 import sys
-import re
-import io
+import subprocess
 import traceback
-from tqdm import tqdm
+import re
+import shutil
 from flask import current_app
-import tensorflow as tf
+
+# [변경] 기존 tensorflow 제거, music21은 PDF용으로 유지
 import music21 as m21
 
-# --- 상수 정의 ---
-SR = 44100
-N_MELS = 128
-N_FFT = 2048
-HOP_LENGTH = 512
-TARGET_SHAPE = (128, 128)
+# [신규] 통합된 MIDI 생성 모듈 임포트
+from app.services.MiDi_maker import drum_wav_to_midi, InferenceConfig
 
-# [수정] B안 (3클래스) 적용
-LABELS = ["kick", "snare", "hi-hat"] 
-# [수정] B안 (3클래스) 적용 (하이햇을 42번 Cymbals 노트로 매핑)
-NOTE_MAP = {"kick": 36, "snare": 38, "hi-hat": 42} 
-
-# --- TQDM 출력을 Job Status의 'message'로 리디렉션 ---
-class TqdmToJobUpdater(io.StringIO):
-    def __init__(self, job_id, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.job_id = job_id
-        self._last_message = "" # 중복 전송을 막기 위한 내부 캐시
-
-    def write(self, s):
-        message = s.strip()
-        if not message or message == '\r':
-            return
-
-        # 정규표현식으로 설명(desc)과 퍼센트(%) 추출
-        match = re.search(r'^(.*?:)?\s*(\d+%)', message)
-        simple_message = self._last_message
-
-        if match:
-            desc = match.group(1) or "처리 중..."
-            percent = match.group(2)
-            simple_message = f"{desc.strip()} {percent}"
-        
-        if simple_message != self._last_message:
-            self._last_message = simple_message
-            from app.tasks import update_job_status
-            update_job_status(
-                self.job_id,
-                'processing',
-                simple_message
-            )
-
-# --- TFLite 모델 로드 함수 ---
-def load_tflite_model(model_path):
-    if not os.path.exists(model_path):
-        current_app.logger.error(f"치명적 오류: TFLite 모델 파일 '{model_path}'를 찾을 수 없습니다.")
-        raise FileNotFoundError(f"모델 파일을 찾을 수 없습니다: {model_path}")
-    current_app.logger.info(f"TFLite 모델 로딩 중: {model_path}")
-    interpreter = tf.lite.Interpreter(model_path=model_path)
-    interpreter.allocate_tensors()
-    current_app.logger.info("TFLite 모델 로딩 및 텐서 할당 완료.")
-    return interpreter
-
-# --- 스펙트로그램 변환 함수 ---
-def audio_segment_to_melspec(y, sr):
-    mel_spec = librosa.feature.melspectrogram(y=y, sr=sr, n_fft=N_FFT, hop_length=HOP_LENGTH, n_mels=N_MELS)
-    mel_spec_db = librosa.power_to_db(mel_spec, ref=np.max)
-    if mel_spec_db.shape[1] < TARGET_SHAPE[1]:
-        pad_width = TARGET_SHAPE[1] - mel_spec_db.shape[1]
-        mel_spec_db = np.pad(mel_spec_db, pad_width=((0, 0), (0, pad_width)), mode='constant')
-    else:
-        mel_spec_db = mel_spec_db[:, :TARGET_SHAPE[1]]
-    return mel_spec_db
-
-# --- Demucs 실행 헬퍼 함수 ---
+# --- Demucs 실행 헬퍼 함수 (기존 유지) ---
 def run_demucs_separation(input_path, output_dir, job_id):
     from app.tasks import update_job_status
 
@@ -102,12 +36,12 @@ def run_demucs_separation(input_path, output_dir, job_id):
     try:
         for line in process.stderr:
             line_strip = line.strip()
-            current_app.logger.info(f"[Demucs/stderr - {job_id}]: {line_strip}")
+            # 로그가 너무 많으면 주석 처리 가능
+            # current_app.logger.info(f"[Demucs/stderr - {job_id}]: {line_strip}")
 
             if line_strip.startswith("Separating:"):
                 match = re.search(r'(\d+%)', line_strip)
                 simple_message = "드럼 분리 중..."
-                
                 if match:
                     simple_message = f"드럼 분리 중... {match.group(1)}"
                 
@@ -119,11 +53,11 @@ def run_demucs_separation(input_path, output_dir, job_id):
         stdout_data, stderr_data = process.communicate()
 
     if process.returncode != 0:
-        current_app.logger.error(f"[{job_id}] Demucs 실행 실패.")
-        current_app.logger.error(f"[{job_id}] STDERR: {stderr_data}")
+        current_app.logger.error(f"[{job_id}] Demucs 실행 실패.\nSTDERR: {stderr_data}")
         update_job_status(job_id, 'error', f"Demucs 오류: {stderr_data[:100]}")
         return None
 
+    # 분리된 파일 경로 찾기
     input_filename = os.path.basename(input_path)
     file_stem = os.path.splitext(input_filename)[0]
     separated_drum_file = os.path.join(
@@ -134,208 +68,187 @@ def run_demucs_separation(input_path, output_dir, job_id):
         current_app.logger.info(f"[{job_id}] 드럼 분리 성공: {separated_drum_file}")
         return separated_drum_file
     else:
-        current_app.logger.error(f"[{job_id}] 오류: Demucs는 성공했으나 'drums.wav' 파일을 찾을 수 없습니다.")
+        current_app.logger.error(f"[{job_id}] 오류: Demucs 완료 후 파일을 찾을 수 없음.")
         update_job_status(job_id, 'error', "Demucs 완료했으나 드럼 파일 없음")
         return None
 
-# --- MIDI 생성 메인 함수 ---
-def generate_midi_from_audio(audio_path, result_dir, bpm=120):
+
+# --- [신규] PyTorch 기반 MIDI 생성 함수 ---
+def generate_midi_with_new_model(drum_audio_path, result_dir, job_id):
     from app.tasks import update_job_status
+
+    model_path = current_app.config['MODEL_PATH']
     
-    interpreter = load_tflite_model(current_app.config['MODEL_PATH'])
-    input_details = interpreter.get_input_details()
-    output_details = interpreter.get_output_details()
+    # 모델 파일 존재 확인
+    if not os.path.exists(model_path):
+        current_app.logger.error(f"[{job_id}] 모델 파일을 찾을 수 없음: {model_path}")
+        update_job_status(job_id, 'error', '서버 설정 오류: 모델 파일 없음')
+        return False, 0
 
-    job_id = os.path.basename(result_dir)
-    midi_out = os.path.join(result_dir, f"{job_id}.mid")
-    csv_out = os.path.join(result_dir, f"{job_id}.csv")
     try:
-        y, sr = librosa.load(audio_path, sr=SR, mono=True)
-        onsets = librosa.onset.onset_detect(y=y, sr=sr, backtrack=True, units='time')
-
-        events = []
-        PRE, POST = 0.04, 0.11
-        L = int((PRE + POST) * sr)
+        update_job_status(job_id, 'processing', 'AI 모델 추론 및 MIDI 변환 중...')
         
-        progress_stream = TqdmToJobUpdater(job_id)
+        # 설정 로드
+        config = InferenceConfig()
+        
+        # [핵심] midi_maker.py의 메인 함수 호출
+        # 리턴값: midi_path, bpm, grouped_events
+        output_midi_path, detected_bpm, _ = drum_wav_to_midi(
+            wav_path=drum_audio_path,
+            model_path=model_path,
+            output_dir=result_dir,
+            config=config,
+            bpm_override=None # 자동 감지 사용
+        )
+        
+        current_app.logger.info(f"[{job_id}] MIDI 생성 완료: {output_midi_path}, BPM: {detected_bpm}")
+        return True, detected_bpm
 
-        for t in tqdm(onsets, desc="MIDI 노트 변환 중", file=progress_stream, ncols=80, unit=" 노트"):
-            s = max(0, int((t - PRE) * sr));
-            e = min(len(y), int((t + POST) * sr))
-            seg = y[s:e]
-            if len(seg) < L: seg = np.pad(seg, (0, L - len(seg)))
-
-            spec = audio_segment_to_melspec(seg, sr) 
-            spec_input = spec[np.newaxis, ..., np.newaxis].astype(np.float32)
-
-            interpreter.set_tensor(input_details[0]['index'], spec_input)
-            interpreter.invoke()
-            proba = interpreter.get_tensor(output_details[0]['index'])[0]
-
-            lab_id = int(proba.argmax())
-            lab = LABELS[lab_id]
-            events.append((float(t), lab, float(proba[lab_id])))
-
-        with open(csv_out, "w", newline="") as f:
-            w = csv.writer(f);
-            w.writerow(["time_sec", "label", "prob"])
-            for t, lab, p in events: w.writerow([f"{t:.4f}", lab, f"{p:.3f}"])
-
-        pm = pretty_midi.PrettyMIDI(initial_tempo=bpm)
-        drum_instrument = pretty_midi.Instrument(program=0, is_drum=True)
-        for t, lab, p in events:
-            if lab in NOTE_MAP:
-                pitch = NOTE_MAP[lab]
-                note = pretty_midi.Note(velocity=100, pitch=pitch, start=t, end=t + 0.1)
-                drum_instrument.notes.append(note)
-        pm.instruments.append(drum_instrument)
-        pm.write(midi_out)
-
-        return True
     except Exception as e:
         error_trace = traceback.format_exc()
-        current_app.logger.error(f"MIDI 생성 오류 (job: {job_id}): {e}\n{error_trace}")
-        return False
+        current_app.logger.error(f"[{job_id}] MIDI 생성 실패: {e}\n{error_trace}")
+        update_job_status(job_id, 'error', f'MIDI 변환 실패: {str(e)}')
+        return False, 0
 
-# --- MIDI를 퍼커션 악보 PDF로 변환 함수 ---
-# (중복 정의 문제 해결: 파일 내에 이 함수가 *한 번만* 있도록 함)
 
-# [수정] backend/app/services/audio_processor.py
-
+# --- PDF 변환 함수 (기존 유지 + 일부 경로 로직 강화) ---
 def generate_pdf_from_midi(midi_path, pdf_output_path, job_id):
-    """
-    music21로 MusicXML을 생성한 뒤, MuseScore를 subprocess로 직접 호출하여
-    PDF 드럼 악보를 생성합니다. (OS에 따라 경로 자동 변경)
-    """
     from app.tasks import update_job_status
-    update_job_status(job_id, 'processing', 'MIDI 파일을 악보(XML)로 변환 중...')
+    
+    update_job_status(job_id, 'processing', 'MIDI 파일을 악보(PDF)로 변환 중...')
 
-    # --- [신규] OS에 따라 MuseScore 경로 설정 ---
-    if os.name == 'nt': # 'nt'는 Windows를 의미
-        musescore_path = r'C:/Program Files/MuseScore 3/bin/MuseScore3.exe'
-    else: # Windows가 아닌 경우 (Linux/Docker)
-        musescore_path = '/usr/bin/musescore3' # Ubuntu의 기본 설치 경로
-    # --- [신규] 여기까지 ---
+    # OS별 MuseScore 경로 설정 (.env 파일로 구분함)
+    musescore_path = current_app.config['MUSESCORE_PATH']
 
-    # 1. 경로 확인
     if not os.path.exists(musescore_path):
-        current_app.logger.error(f"[{job_id}] MuseScore 경로를 찾을 수 없습니다: {musescore_path}")
-        update_job_status(job_id, 'error', 'MuseScore 실행 파일을 찾을 수 없습니다.')
+        current_app.logger.error(f"[{job_id}] MuseScore 없음: {musescore_path}")
+        # PDF 실패는 치명적이지 않으므로 로그만 남기고 False 리턴 (작업은 완료 처리)
         return False
 
-    # 임시 MusicXML 파일 경로
     xml_temp_path = pdf_output_path.replace(".pdf", ".xml")
 
     try:
-        # 2. MIDI -> MusicXML 변환
+        # 1. Music21: MIDI -> MusicXML
         score = m21.converter.parse(midi_path)
         
-        # [수정] 악기 정보를 삭제하지 않고, 기보법(Clef)만 설정
+        # Percussion Clef 설정
         for part in score.recurse().getElementsByClass(m21.stream.Part):
             part.insert(0, m21.clef.PercussionClef())
         
-        # [수정] B안 (3클래스) - 하이햇 노트 헤드 변경
+        # 하이햇(42) 노트 헤드 변경
         for note in score.recurse().getElementsByClass(m21.note.Note):
-            if note.pitch.midi == 42: 
+            if note.pitch.midi == 42:
                 note.notehead = 'x'
-        
+                
         score.write('musicxml', fp=xml_temp_path)
-        current_app.logger.info(f"[{job_id}] MusicXML 파일 생성 성공: {xml_temp_path}")
-
+        
     except Exception as e:
-        error_trace = traceback.format_exc()
-        current_app.logger.error(f"[{job_id}] MusicXML 생성 실패: {e}\n{error_trace}")
-        update_job_status(job_id, 'error', '악보(XML) 변환 실패')
+        current_app.logger.error(f"[{job_id}] MusicXML 변환 실패: {e}")
         return False
-    
+
     try:
-        # 3. MusicXML -> PDF 변환 (Subprocess 호출)
-        update_job_status(job_id, 'processing', '악보(PDF) 생성 중...')
+        # 2. MuseScore: MusicXML -> PDF
         command = [musescore_path, '-o', pdf_output_path, xml_temp_path]
+        # subprocess.run의 무한 대기 루프 방지
+        subprocess.run(command, capture_output=True, text=True, timeout=30)
         
-        result = subprocess.run(command, capture_output=True, text=True, timeout=30)
-
-        if result.returncode != 0:
-            current_app.logger.error(f"[{job_id}] MuseScore PDF 변환 실패. Stderr: {result.stderr}")
-            update_job_status(job_id, 'error', f'PDF 변환 실패: {result.stderr[:100]}')
+        if os.path.exists(pdf_output_path):
+            current_app.logger.info(f"[{job_id}] PDF 생성 성공.")
+            return True
+        else:
+            current_app.logger.error(f"[{job_id}] PDF 파일 생성 안됨.")
             return False
-        elif not os.path.exists(pdf_output_path):
-            current_app.logger.error(f"[{job_id}] MuseScore는 성공했으나 PDF 파일이 생성되지 않음.")
-            update_job_status(job_id, 'error', 'PDF 파일 생성 알 수 없는 오류')
-            return False
-        
-        current_app.logger.info(f"[{job_id}] PDF 악보 생성 성공: {pdf_output_path}")
-        return True
-
-    except Exception as e:
-        error_trace = traceback.format_exc()
-        current_app.logger.error(f"[{job_id}] PDF 변환(subprocess) 중 치명적 오류: {e}\n{error_trace}")
-        update_job_status(job_id, 'error', 'PDF 변환 중 타임아웃 또는 오류 발생')
+    except subprocess.TimeoutExpired:
+        current_app.logger.error(f"[{job_id}] PDF 변환 시간 초과 (30초)")
         return False
-    
+    except Exception as e:
+        current_app.logger.error(f"[{job_id}] MuseScore 실행 실패: {e}")
+        return False
     finally:
-        # 4. 임시 XML 파일 삭제
+        # 완료 후 cleanup 실행 (임시 XML 파일 삭제)
         if os.path.exists(xml_temp_path):
             os.remove(xml_temp_path)
-            
-# --- 전체 오디오 처리 파이프라인 ---
+
+
+# --- 전체 파이프라인 (메인 진입점) ---
 def run_processing_pipeline(job_id, audio_path):
     from app.tasks import update_job_status
 
+    # 결과 저장 폴더: backend/results/<job_id>/
     result_dir = os.path.join(current_app.config['RESULT_FOLDER'], job_id)
     os.makedirs(result_dir, exist_ok=True)
 
-    # --- 1. 드럼 분리 ---
-    update_job_status(job_id, 'processing', '드럼 트랙 분리 시작...')
-    current_app.logger.info(f"[{job_id}] Demucs 음원 분리 시작...")
-    
+    # 1. 드럼 분리 (Demucs)
+    update_job_status(job_id, 'processing', '배경음 제거 및 드럼 분리 중...')
     separated_drum_path = run_demucs_separation(audio_path, result_dir, job_id)
     
     if not separated_drum_path:
-        current_app.logger.error(f"[{job_id}] 작업 실패: Demucs 실행 오류.")
-        return # [중요] 여기서 함수 종료
+        return # Demucs 실패 시 종료
 
-    # --- 2. BPM 분석 ---
-    update_job_status(job_id, 'processing', '음원 템포(BPM) 분석 중...')
-    current_app.logger.info(f"[{job_id}] BPM 분석 시작...")
+    # 2. MIDI 생성 (New BiGRU Model)
+    # BPM 감지도 내부에서 수행됨
+    success, detected_bpm = generate_midi_with_new_model(separated_drum_path, result_dir, job_id)
+
+    if not success:
+        return # MIDI 실패 시 종료
+
+
+    # MIDI 변환 (midi_maker 호출)
+    update_job_status(job_id, 'processing', 'AI 채보 및 MIDI 변환 중...')
+    
+    model_path = current_app.config['MODEL_PATH'] # config.py에 정의된 .pt 경로
+    config = InferenceConfig()
+
+    # 3. PDF 생성
+    midi_file_path = os.path.join(result_dir, f"{job_id}_drums.mid") # midi_maker 저장명 규칙 확인
+    # midi_maker.py는 "{base_name}_drums.mid"로 저장함. 
+    # Demucs 출력 파일명이 'drums.wav'이므로 결과는 'drums_drums.mid'가 될 수도 있고, 
+    # run_demucs_separation의 결과 경로에 따라 달라짐.
+    # 안전하게 midi_maker가 리턴한 경로를 사용하는 것이 좋지만, 
+    # 위 함수(generate_midi_with_new_model)에서는 경로를 리턴받지 않았으므로 확인 필요.
+    # -> midi_maker.py 수정 없이 쓰려면 파일명을 예측하거나 midi_maker가 리턴한 경로를 받아와야 함.
+    # -> 위 generate_midi_with_new_model 코드는 리턴값을 받도록 수정했음 (True, bpm).
+    # -> 하지만 정확한 파일명을 위해 generate_midi_with_new_model가 path도 리턴하게 하면 더 좋음.
+    # -> 현재 midi_maker.py의 drum_wav_to_midi는 (midi_path, bpm, grouped)를 리턴함.
+    
+    # [파일명 보정]
+    # run_demucs_separation은 ".../drums.wav"를 리턴함.
+    # midi_maker는 stem 이름을 따서 ".../drums_drums.mid"로 저장할 것임.
+    # 이를 깔끔하게 rename 하거나 그대로 사용. 여기서는 그대로 사용.
+    
+    # 실제 저장된 파일명 찾기 (result_dir 내의 .mid 파일)
+
     try:
-        y, sr = librosa.load(audio_path, sr=SR)
-        # [수정] librosa.beat.beat_track 사용 
-        tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
-        bpm = int(tempo)
-        current_app.logger.info(f"[{job_id}] 분석된 BPM: {bpm}")
+        # midi_maker 실행 -> 임시 MIDI 파일 생성됨
+        generated_midi_path, detected_bpm, _ = drum_wav_to_midi(
+            wav_path=separated_drum_path,
+            model_path=model_path,
+            output_dir=result_dir,
+            config=config
+        )
+
+        # 3. 파일명 변경 (프론트엔드 다운로드 규칙 맞추기)
+        # 프론트엔드는 /download/midi/<job_id> 요청 시 "{job_id}.mid"를 찾음
+        final_midi_path = os.path.join(result_dir, f"{job_id}.mid")
+        
+        # midi_maker가 만든 파일 이동/이름변경
+        if os.path.exists(generated_midi_path):
+            shutil.move(generated_midi_path, final_midi_path)
+        else:
+            raise FileNotFoundError("MIDI 파일 생성 실패")
+
+        # 4. PDF 생성
+        pdf_path = os.path.join(result_dir, f"{job_id}.pdf")
+        generate_pdf_from_midi(final_midi_path, pdf_path, job_id)
+
+        # 5. 완료 상태 업데이트 (프론트엔드로 URL 전달)
+        results = {
+            "midiUrl": f"/download/midi/{job_id}", # routes.py의 라우트와 일치
+            "pdfUrl": f"/download/pdf/{job_id}",
+            "bpm": detected_bpm
+        }
+        update_job_status(job_id, 'completed', '변환 완료!', results=results)
+
     except Exception as e:
-        bpm = 120
-        current_app.logger.warning(f"[{job_id}] BPM 분석 실패: {e}. 기본값 {bpm}으로 설정.")
-    
-    update_job_status(job_id, 'processing', 'BPM 분석 완료. MIDI 변환 시작...')
-
-    # --- 3. MIDI 생성 ---
-    current_app.logger.info(f"[{job_id}] MIDI 생성 시작...")
-    
-    midi_success = generate_midi_from_audio(separated_drum_path, result_dir, bpm)
-
-    # [수정] MIDI 생성 실패 시, 여기서 즉시 'error'로 상태 변경하고 종료
-    if not midi_success:
-        update_job_status(job_id, 'error', 'MIDI 생성 중 오류가 발생했습니다.')
-        current_app.logger.error(f"[{job_id}] 작업 실패: MIDI 생성 실패.")
-        return # [중요] 여기서 함수 종료
-
-    # --- 4. PDF 생성 (MIDI가 성공했을 때만 실행) ---
-    midi_file_path = os.path.join(result_dir, f"{job_id}.mid")
-    pdf_file_path = os.path.join(result_dir, f"{job_id}.pdf")
-    
-    pdf_success = generate_pdf_from_midi(midi_file_path, pdf_file_path, job_id)
-
-    if not pdf_success:
-        current_app.logger.error(f"[{job_id}] PDF 변환 실패. MIDI만 제공됩니다.")
-        # PDF 실패는 전체 실패가 아님, MIDI는 성공했으므로 계속 진행
-
-    # --- 5. 최종 결과 업데이트 (MIDI 성공 시 무조건 'completed'
-    results = {
-        "midiUrl": f"/download/midi/{job_id}",
-        # [수정] PDF가 실패했어도 URL은 보냄 (프론트/백엔드에서 404 처리)
-        "pdfUrl": f"/download/pdf/{job_id}", 
-    }
-    update_job_status(job_id, 'completed', '작업이 완료되었습니다.', results=results)
-    current_app.logger.info(f"[{job_id}] 모든 작업 완료.")
+        current_app.logger.error(f"[{job_id}] 처리 중 오류: {e}")
+        update_job_status(job_id, 'error', f'오류 발생: {str(e)}')

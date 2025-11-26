@@ -6,7 +6,7 @@ gunicorn==21.2.0
 
 # Audio Processing & Music
 numpy==1.26.2
-librosa==0.10.1
+librosa>=0.10.2
 soundfile==0.12.1
 pretty_midi==0.2.10
 music21==9.1.0
@@ -21,3 +21,6 @@ torchaudio==2.1.2
 tqdm==4.66.1
 python-dotenv==1.0.0
 requests==2.31.0
+
+# dot-env
+python-dotenv==1.2.1
