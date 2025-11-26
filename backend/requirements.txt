@@ -6,21 +6,18 @@ gunicorn==21.2.0
 
 # Audio Processing & Music
 numpy==1.26.2
+# [중요] scipy 충돌 방지를 위해 librosa 버전 올림
 librosa>=0.10.2
 soundfile==0.12.1
 pretty_midi==0.2.10
 music21==9.1.0
 demucs==4.0.1
 
-# Deep Learning (PyTorch CPU version recommended for standard containers)
-# GPU 사용 시 docker command에서 변경 가능
+# Deep Learning (PyTorch CPU version)
 torch==2.1.2
 torchaudio==2.1.2
 
 # Utilities
 tqdm==4.66.1
-python-dotenv==1.0.0
+python-dotenv>=1.0.0
 requests==2.31.0
-
-# dot-env
-python-dotenv==1.2.1

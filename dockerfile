@@ -28,19 +28,6 @@ RUN pip install --no-cache-dir -r requirements.txt --extra-index-url https://dow
 # backend 폴더의 모든 내용을 컨테이너의 /app으로 복사
 COPY backend/ .
 
-# [중요] 모델 가중치 파일 (.pt) 확인
-# 로컬의 backend/app/outputs/ 폴더에 best_model.pt가 있어야 복사됩니다.
-# 만약 경로가 다르다면 아래 경로를 실제 모델 위치로 수정해야 합니다.
-# COPY path/to/local/best_model.pt /app/app/outputs/best_model.pt
-
-# --env-file 옵션으로 .env 파일을 컨테이너에 연결
-RUN -d \
-  -p 5000:5000 \
-  --env-file ./backend/.env \
-  --name midi-backend \
-  midi-extractor-backend
-
-
 # 7. 환경 변수 설정
 ENV FLASK_APP=run.py
 ENV FLASK_ENV=production
