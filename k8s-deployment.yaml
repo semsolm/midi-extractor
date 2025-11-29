@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: midi-backend
+spec:
+  replicas: 1
+  # 재배포 시 기존 Pod 종료 후 새 Pod 시작 (자원 부족 방지)
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: midi-backend
+  template:
+    metadata:
+      labels:
+        app: midi-backend
+    spec:
+      containers:
+      - name: midi-backend
+        # 예: asia-northeast3-docker.pkg.dev/midi-extrator/midi-repo/midi-backend:v6
+        image: asia-northeast3-docker.pkg.dev/midi-extractor/midi-repo/midi-backend:v6
+        ports:
+        - containerPort: 5000
+        env:
+        # 1. MuseScore 설정
+        - name: QT_QPA_PLATFORM
+          value: "offscreen"
+        # 2. GCS 인증 키 경로
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: "/var/secrets/google/key.json"
+        # 3. GCS 버킷 이름
+        - name: GCS_BUCKET_NAME
+          value: "midi-extractor-files"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        volumeMounts:
+        # 인증 키 마운트
+        - name: gcs-key-volume
+          mountPath: "/var/secrets/google"
+          readOnly: true
+      volumes:
+      # Secret 볼륨 정의
+      - name: gcs-key-volume
+        secret:
+          secretName: gcs-key
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: midi-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: midi-backend
+  ports:
+  - port: 80
+    targetPort: 5000

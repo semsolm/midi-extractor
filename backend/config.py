@@ -4,6 +4,10 @@ class Config:
     """Flask 애플리케이션의 기본 설정을 정의"""
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
+    # GCS 버킷 이름 정의
+    GCS_BUCKET_NAME = os.environ.get('GCS_BUCKET_NAME', 'midi-extrator-files')
+
+
     UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
     RESULT_FOLDER = os.path.join(BASE_DIR, 'results')
 

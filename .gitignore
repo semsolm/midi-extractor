@@ -1,41 +1,67 @@
-# --- Python & System ---
+# ==================================
+# 1. 보안 및 환경설정 (절대 업로드 금지)
+# ==================================
+# GCP 서비스 계정 키 (가장 중요!)
+gcs-key.json
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+
+# 환경 변수 파일
+.env
+backend/.env
+frontend/.env
+
+# 가상환경
+venv/
+.venv/
+env/
+
+# ==================================
+# 2. Python & Flask (Backend)
+# ==================================
+# 컴파일된 파일 및 캐시
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
-.Python
-env/
-venv/
-.venv/
-.env
 
-# --- Flask & Backend Data ---
-backend/uploads/*
-backend/results/*
-!backend/uploads/.gitkeep
-!backend/results/.gitkeep
-backend/app/outputs/*
-
-# --- Large Model Files (GitHub 용량 제한 방지) ---
+# PyTorch 모델 파일 (용량이 커서 GitHub 업로드 불가)
 *.pt
 *.pth
 *.tflite
-*.h5
+backend/app/models/*.pt
 
-
-# --- Audio Files (테스트 파일 제외) ---
-*.wav
-*.mp3
+# 데이터 처리용 임시 폴더
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/results/*
+!backend/results/.gitkeep
 backend/separated/
 
-# --- Frontend (Node.js/React) ---
+# 오디오 파일
+*.wav
+*.mp3
+
+# ==================================
+# 3. React & Node.js (Frontend)
+# ==================================
+# 의존성 패키지 (용량이 매우 큼)
 frontend/node_modules/
+
+# 빌드 결과물
 frontend/dist/
 frontend/build/
-frontend/.env
-frontend/.DS_Store
 
-# --- IDE Settings ---
+# 로그 파일
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==================================
+# 4. 시스템 및 IDE 설정
+# ==================================
+.DS_Store
 .idea/
 .vscode/
 *.swp
