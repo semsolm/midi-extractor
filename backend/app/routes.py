@@ -22,16 +22,16 @@ def process_audio_route():
         filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], f"{job_id}.mp3")
         file.save(filepath)
 
-        # [수정] progress=0 제거
         tasks.update_job_status(job_id, 'pending', '작업을 대기 중입니다.')
-        tasks.start_background_task(job_id, filepath)
+        # [수정] 원본 파일명(file.filename)을 함께 전달
+        tasks.start_background_task(job_id, filepath, file.filename)
 
         return jsonify({
             "jobId": job_id,
             "message": "파일 업로드 성공. 처리 작업을 시작합니다."
         }), 202
 
-# --- (이하 /api/result/, /download/ 등은 기존과 동일) ---
+
 @bp.route('/api/result/<job_id>', methods=['GET'])
 def get_result_route(job_id):
     job = tasks.get_job_status(job_id)
@@ -55,6 +55,4 @@ def download_pdf_route(job_id):
     filename = f"{job_id}.pdf"
     if os.path.exists(os.path.join(result_dir, filename)):
         return send_from_directory(result_dir, filename, as_attachment=False)
-    
-    # [수정] 오류 메시지를 "MIDI"에서 "PDF"로 변경
     return jsonify({"error": "PDF 악보 파일을 찾을 수 없습니다."}), 404

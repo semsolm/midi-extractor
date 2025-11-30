@@ -119,7 +119,7 @@ def generate_midi_with_new_model(drum_audio_path, result_dir, job_id):
 
 # GM 드럼 MIDI 번호 → 드럼 보표 표시 위치 (displayStep, displayOctave)
 GM_DRUM_MAP = {
-    'kick': ('F', 4),   # 킥 - 첫 번째 줄 아래
+    'kick': ('F', 4),  # 킥 - 첫 번째 줄 아래
     'snare': ('C', 5),  # 스네어 - 세 번째 줄
     'hihat': ('G', 5),  # 하이햇 - 위쪽
 }
@@ -180,7 +180,7 @@ def generate_pdf_from_grouped_events(grouped_events, bpm, pdf_output_path, job_i
     try:
         current_app.logger.info(
             f"[{job_id}] grouped_events로 악보 생성 중... "
-            f"BPM: {bpm}, 이벤트 수: {len(grouped_events)}"
+            f"BPM: {bpm}, 이벤트 수: {len(grouped_events)}, 제목: {title}"
         )
 
         # 초 → 비트 변환
@@ -310,7 +310,15 @@ def generate_pdf_from_grouped_events(grouped_events, bpm, pdf_output_path, job_i
             os.remove(xml_temp_path)
 
 
-def run_processing_pipeline(job_id, audio_path):
+def run_processing_pipeline(job_id, audio_path, original_filename=None):
+    """
+    전체 처리 파이프라인 실행
+
+    Args:
+        job_id: 작업 고유 ID
+        audio_path: 저장된 오디오 파일 경로
+        original_filename: 사용자가 업로드한 원본 파일명 (악보 제목에 사용)
+    """
     from app.tasks import update_job_status
 
     result_dir = os.path.join(current_app.config['RESULT_FOLDER'], job_id)
@@ -346,9 +354,13 @@ def run_processing_pipeline(job_id, audio_path):
         # 4. PDF 생성 - grouped_events 직접 사용!
         pdf_path = os.path.join(result_dir, f"{job_id}.pdf")
 
-        # 파일명에서 제목 추출
-        original_filename = os.path.basename(audio_path)
-        title = os.path.splitext(original_filename)[0]
+        # [수정] 원본 파일명이 있으면 사용, 없으면 기존 방식 (fallback)
+        if original_filename:
+            title = os.path.splitext(original_filename)[0]
+        else:
+            title = os.path.splitext(os.path.basename(audio_path))[0]
+
+        current_app.logger.info(f"[{job_id}] 악보 제목: {title}")
 
         generate_pdf_from_grouped_events(
             grouped_events=grouped_events,
