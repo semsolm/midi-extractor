@@ -288,6 +288,65 @@ def enforce_minimum_gap(onsets, config):
         filtered_onsets[dt] = filtered
     return filtered_onsets
 
+def estimate_bpm_from_onsets(onsets, config, fallback_bpm):
+    """
+    드럼 모델이 뽑은 킥/스네어 onsets(초 단위)만으로 BPM을 다시 추정하는 함수
+
+    Args:
+        onsets: {'kick': [t1, t2, ...], 'snare': [...], 'hihat': [...]} 형태 (초 단위)
+        config: InferenceConfig 인스턴스
+        fallback_bpm: librosa로 먼저 추정한 BPM (문제 생기면 이 값으로 복귀)
+
+    Returns:
+        refined_bpm: onsets 기반으로 다시 계산한 BPM
+    """
+
+    # 1) 킥 + 스네어 타격 시점만 사용 (박자 정보가 가장 강함)
+    times = []
+    for dt in ['kick', 'snare']:
+        if dt in onsets and onsets[dt]:
+            times.extend(onsets[dt])
+
+    # 타격이 너무 적으면 그냥 원래 BPM 사용
+    if len(times) < 2:
+        return float(fallback_bpm)
+
+    times = sorted(times)
+
+    # 2) 연속 타격 간격(IOI: Inter-Onset Interval) 계산
+    intervals = np.diff(times)  # 초 단위 간격 배열
+
+    # 3) 너무 짧거나(노이즈) 너무 긴(몇 마디 건너뛴) 간격 제거
+    #    - 최소 간격: 설정된 최대 BPM에서 나올 수 있는 최소 beat 간격
+    #    - 최대 간격: 설정된 최소 BPM에서 나올 수 있는 beat 간격의 4배 정도까지 허용
+    min_ioi = 60.0 / config.bpm_end_range          # 예: 200BPM이면 최소 0.3초
+    max_ioi = (60.0 / config.bpm_start_range) * 4  # 예: 60BPM 기준 1beat=1초 → 4beat=4초
+
+    intervals = intervals[(intervals >= min_ioi) & (intervals <= max_ioi)]
+
+    if len(intervals) == 0:
+        # 필터링하고 나니 남는 게 없으면 원래 BPM 사용
+        return float(fallback_bpm)
+
+    # 4) 중간값(median)으로 대표 간격 선택 (outlier에 덜 민감)
+    median_ioi = float(np.median(intervals))
+    if median_ioi <= 0:
+        return float(fallback_bpm)
+
+    bpm = 60.0 / median_ioi  # 간격(초) → BPM
+
+    # 5) 설정된 BPM 범위 안으로 2배/2분의1 스케일 조정
+    #    (절반 템포 / 두배 템포 문제를 완화)
+    while bpm < config.bpm_start_range:
+        bpm *= 2.0
+    while bpm > config.bpm_end_range:
+        bpm /= 2.0
+
+    bpm = float(np.clip(bpm, config.bpm_start_range, config.bpm_end_range))
+
+    return bpm
+
+
 
 def quantize_to_grid(onsets, bpm, config):
     quantized_onsets = {}
@@ -343,8 +402,19 @@ def create_midi_file(grouped_events, bpm, config, output_path):
 
 
 def drum_wav_to_midi(wav_path, model_path, output_dir=None, config=None, bpm_override=None):
-    if config is None: config = InferenceConfig()
-    if output_dir is None: output_dir = os.path.dirname(wav_path)
+    """
+    드럼 WAV → MIDI 변환 메인 함수
+
+    개선 포인트:
+    - 1차 BPM: librosa.beat.beat_track 으로 rough estimate
+    - 모델 추론으로 킥/스네어 onsets 뽑은 뒤,
+      그 onsets 간격(IOI)로 BPM을 다시 추정 (estimate_bpm_from_onsets)
+    - 최종 BPM으로 그리드 양자화 + MIDI 생성
+    """
+    if config is None:
+        config = InferenceConfig()
+    if output_dir is None:
+        output_dir = os.path.dirname(wav_path)
     os.makedirs(output_dir, exist_ok=True)
 
     print(f"모델 로딩 중: {model_path}")
@@ -359,11 +429,19 @@ def drum_wav_to_midi(wav_path, model_path, output_dir=None, config=None, bpm_ove
     model.load_state_dict(checkpoint['model_state_dict'])
     model.eval()
 
+    # ----------------------------------------
+    # 1) 1차 BPM: librosa 기반 rough estimate
+    # ----------------------------------------
     if bpm_override:
         bpm = float(bpm_override)
+        print(f"[BPM] 외부에서 BPM override 지정: {bpm:.2f}")
     else:
         bpm = detect_bpm(wav_path, config)
+        print(f"[BPM] 1차(librosa) BPM 추정: {bpm:.2f}")
 
+    # ----------------------------------------
+    # 2) 모델 추론 → onsets 검출 (초 단위)
+    # ----------------------------------------
     mel_spec, _ = load_and_preprocess_audio(wav_path, config)
     frame_times = np.arange(mel_spec.shape[0]) * config.frame_duration
     predictions = predict_drum_onsets(mel_spec, model, config)
@@ -371,14 +449,32 @@ def drum_wav_to_midi(wav_path, model_path, output_dir=None, config=None, bpm_ove
     onsets = detect_peaks(predictions, config, frame_times)
     onsets = merge_nearby_events(onsets, config)
     onsets = enforce_minimum_gap(onsets, config)
-    onsets = quantize_to_grid(onsets, bpm, config)
-    grouped = group_simultaneous_hits(onsets, config)
 
+    # ----------------------------------------
+    # 3) 킥/스네어 onsets 기반으로 BPM 다시 추정
+    #    → 드럼 전용 리듬 정보만 사용해서 refined BPM 구함
+    # ----------------------------------------
+    refined_bpm = estimate_bpm_from_onsets(onsets, config, fallback_bpm=bpm)
+    print(f"[BPM] onsets 기반 BPM 재추정: {refined_bpm:.2f}")
+
+    bpm = refined_bpm  # 이후 양자화/악보는 이 BPM 기준으로 처리
+
+    # ----------------------------------------
+    # 4) 최종 BPM 기준 그리드 양자화 + 그룹핑
+    # ----------------------------------------
+    quantized_onsets = quantize_to_grid(onsets, bpm, config)
+    grouped = group_simultaneous_hits(quantized_onsets, config)
+
+    # ----------------------------------------
+    # 5) MIDI 파일 생성
+    # ----------------------------------------
     base_name = Path(wav_path).stem
     midi_path = os.path.join(output_dir, f"{base_name}_drums.mid")
     create_midi_file(grouped, bpm, config, midi_path)
-    print(f"변환 완료: {midi_path}")
-    return midi_path, bpm, grouped  #  리턴값 추가 추천
+    print(f"변환 완료: {midi_path} (BPM={bpm:.2f}, 이벤트 수={len(grouped)})")
+
+    return midi_path, bpm, grouped
+
 
 
 if __name__ == "__main__":
