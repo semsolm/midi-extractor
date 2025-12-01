@@ -99,6 +99,7 @@ body {
    ========================================= */
 .app-header {
   background: var(--header-bg);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--header-border);
   padding: 16px 32px;

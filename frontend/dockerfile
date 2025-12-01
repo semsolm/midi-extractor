@@ -1,0 +1,26 @@
+# 1. 빌드 단계 (Node.js 환경)
+FROM node:22-alpine AS builder
+WORKDIR /app
+
+# 패키지 설치 (캐시 활용)
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# 소스 복사 및 빌드
+# (.env 파일이 있다면 함께 복사되어 빌드 시 환경변수가 주입됨)
+COPY . .
+RUN npm run build
+
+# 2. 실행 단계 (Nginx 웹 서버)
+FROM nginx:1.25-alpine
+
+# 빌드된 정적 파일(dist 폴더)을 Nginx 경로로 복사
+COPY --from=builder /app/dist /usr/share/nginx/html
+# 작성한 Nginx 설정 파일 적용
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# 80번 포트 노출
+EXPOSE 80
+
+# Nginx 실행
+CMD ["nginx", "-g", "daemon off;"]
