@@ -32,7 +32,6 @@ def start_background_task(job_id, audio_path, original_filename=None):
     Args:
         job_id: 작업 고유 ID
         audio_path: 저장된 오디오 파일 경로
-        original_filename: 사용자가 업로드한 원본 파일명 (악보 제목에 사용)
     """
     from app.services.audio_processor import run_processing_pipeline
 
@@ -41,7 +40,7 @@ def start_background_task(job_id, audio_path, original_filename=None):
     def task_with_context():
         with app.app_context():
             # [수정] 원본 파일명을 파이프라인에 전달
-            run_processing_pipeline(job_id, audio_path, original_filename)
+            run_processing_pipeline(job_id, audio_path)
 
     thread = threading.Thread(target=task_with_context)
     thread.start()
