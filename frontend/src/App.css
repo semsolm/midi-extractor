@@ -3,21 +3,72 @@
    ========================================= */
 :root {
   /* Brand Colors */
-  --primary-color: #2563EB;      /* 로열 블루 */
-  --primary-dark: #1E40AF;       /* 깊은 블루 */
+  --primary-color: #2563EB;
+  --primary-dark: #1E40AF;
   --accent-gradient: linear-gradient(135deg, #2563EB 0%, #06B6D4 100%);
 
   /* Backgrounds & Surfaces */
   --bg-color: #F8F9FA;
   --surface-color: #FFFFFF;
+  --bg-gradient: radial-gradient(circle at 50% 0%, #E0F2FE 0%, transparent 60%);
 
   /* Text Colors */
   --text-main: #0F172A;
   --text-sub: #64748B;
 
+  /* Borders */
+  --border-color: #E2E8F0;
+  --border-light: #F1F5F9;
+
   /* Shadows */
   --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
   --shadow-hover: 0 20px 40px -4px rgba(37, 99, 235, 0.15);
+
+  /* Status Colors */
+  --error-bg: #FEF2F2;
+  --error-text: #DC2626;
+  --success-bg: #ECFDF5;
+  --success-text: #059669;
+
+  /* Header */
+  --header-bg: rgba(255, 255, 255, 0.8);
+  --header-border: rgba(0, 0, 0, 0.03);
+}
+
+/* =========================================
+   🌙 Dark Mode Variables
+   ========================================= */
+.dark-mode {
+  --primary-color: #3B82F6;
+  --primary-dark: #2563EB;
+  --accent-gradient: linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%);
+
+  /* Backgrounds & Surfaces */
+  --bg-color: #0F172A;
+  --surface-color: #1E293B;
+  --bg-gradient: radial-gradient(circle at 50% 0%, #1E3A5F 0%, transparent 60%);
+
+  /* Text Colors */
+  --text-main: #F1F5F9;
+  --text-sub: #94A3B8;
+
+  /* Borders */
+  --border-color: #334155;
+  --border-light: #1E293B;
+
+  /* Shadows */
+  --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+  --shadow-hover: 0 20px 40px -4px rgba(59, 130, 246, 0.2);
+
+  /* Status Colors */
+  --error-bg: #371520;
+  --error-text: #F87171;
+  --success-bg: #064E3B;
+  --success-text: #6EE7B7;
+
+  /* Header */
+  --header-bg: rgba(15, 23, 42, 0.9);
+  --header-border: rgba(255, 255, 255, 0.05);
 }
 
 /* =========================================
@@ -31,9 +82,10 @@ body {
   color: var(--text-main);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  background-image: radial-gradient(circle at 50% 0%, #E0F2FE 0%, transparent 60%);
+  background-image: var(--bg-gradient);
   background-repeat: no-repeat;
   min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #root {
@@ -46,13 +98,14 @@ body {
    ☁️ Header
    ========================================= */
 .app-header {
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--header-bg);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid var(--header-border);
   padding: 16px 32px;
   position: sticky;
   top: 0;
   z-index: 100;
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .header-content {
@@ -81,42 +134,111 @@ body {
   font-weight: 700;
   color: var(--text-main);
   letter-spacing: -0.02em;
+  transition: color 0.3s ease;
 }
 
 .header-nav {
   display: flex;
   gap: 20px;
+  align-items: center;
 }
 
 .header-nav .nav-button {
-  background: transparent;
+  background: none;
   border: none;
-  color: var(--text-sub);
-  font-size: 0.95rem;
-  font-weight: 500;
-  padding: 8px 12px;
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.92em;
+  padding: 8px 14px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: color 0.2s ease;
-  position: relative;
+  transition: all 0.2s ease;
+  box-shadow: none;
 }
 
-.header-nav .nav-button:hover { color: var(--primary-color); }
+.header-nav .nav-button:hover {
+  background-color: #e8e8eb;
+  color: #111827;
+  transform: none;
+  box-shadow: none;
+}
 
 .header-nav .nav-button.active {
-  color: var(--text-main);
+  background-color: #e2e3e7;
+  color: #111827;
   font-weight: 700;
 }
 
-.header-nav .nav-button.active::after {
-  content: '';
+/* 다크모드 nav 버튼 */
+.dark-mode .header-nav .nav-button {
+  color: #b0b0b0;
+}
+
+.dark-mode .header-nav .nav-button:hover {
+  background-color: #3a3a3a;
+  color: #e5e5e5;
+}
+
+.dark-mode .header-nav .nav-button.active {
+  background-color: #404040;
+  color: #e5e5e5;
+}
+
+/* =========================================
+   🌙 Dark Mode Toggle Switch
+   ========================================= */
+.dark-mode-toggle-wrapper {
+  margin-left: 10px;
+}
+
+.checkbox.model-1 {
+  position: relative;
+  display: inline-block;
+}
+
+.checkbox.model-1 input[type="checkbox"] {
   position: absolute;
-  bottom: -4px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  background-color: var(--primary-color);
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.checkbox.model-1 label {
+  display: block;
+  width: 48px;
+  height: 26px;
+  background: var(--border-color);
+  border-radius: 99px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.3s ease;
+}
+
+.checkbox.model-1 label::before {
+  content: '☀️';
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  background: white;
   border-radius: 50%;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.checkbox.model-1 input[type="checkbox"]:checked + label {
+  background: var(--primary-color);
+}
+
+.checkbox.model-1 input[type="checkbox"]:checked + label::before {
+  content: '🌙';
+  left: calc(100% - 24px);
 }
 
 /* =========================================
@@ -132,6 +254,7 @@ body {
   margin: 40px auto;
   text-align: center;
   animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
 .main-title {
@@ -141,12 +264,14 @@ body {
   color: var(--text-main);
   letter-spacing: -0.03em;
   line-height: 1.1;
+  transition: color 0.3s ease;
 }
 
 .main-title span {
   background: var(--accent-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .subtitle {
@@ -155,14 +280,42 @@ body {
   margin-bottom: 40px;
   font-weight: 400;
   line-height: 1.6;
+  transition: color 0.3s ease;
+}
+
+/* Menu View (About Us, Help 등) */
+.menu-view {
+  text-align: left;
+  padding: 20px 0;
+}
+
+.menu-view h3 {
+  color: var(--text-main);
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
+
+.menu-view p {
+  color: var(--text-sub);
+  line-height: 1.8;
+}
+
+.menu-view a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.menu-view a:hover {
+  text-decoration: underline;
 }
 
 /* =========================================
    📂 Drop Zone
    ========================================= */
 .drop-zone {
-  background-color: #F8FAFC;
-  border: 2px dashed #E2E8F0;
+  background-color: var(--bg-color);
+  border: 2px dashed var(--border-color);
   border-radius: 20px;
   padding: 50px 30px;
   cursor: pointer;
@@ -173,13 +326,13 @@ body {
 
 .drop-zone:hover {
   border-color: var(--primary-color);
-  background-color: #F0F9FF;
+  background-color: rgba(37, 99, 235, 0.05);
   transform: translateY(-2px);
 }
 
 .drop-zone.active {
   border-color: var(--primary-color);
-  background-color: #EFF6FF;
+  background-color: rgba(37, 99, 235, 0.08);
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
 }
 
@@ -196,7 +349,7 @@ body {
   content: '↓';
   font-size: 1.8rem;
   color: var(--primary-color);
-  background: white;
+  background: var(--surface-color);
   width: 45px;
   height: 45px;
   border-radius: 50%;
@@ -222,7 +375,7 @@ input[type="file"] {
    ========================================= */
 button, .button-primary, .drop-button {
   background: var(--text-main);
-  color: white;
+  color: var(--surface-color);
   padding: 14px 28px;
   font-size: 0.95rem;
   font-weight: 600;
@@ -253,24 +406,53 @@ button:active { transform: scale(0.98); }
 /* =========================================
    📊 Status & Results
    ========================================= */
-.status-container { margin-top: 30px; }
+.status-container {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
 
 .status-error {
   padding: 12px 20px;
   border-radius: 12px;
-  background-color: #FEF2F2;
-  color: #DC2626;
+  background-color: var(--error-bg);
+  color: var(--error-text);
   font-size: 0.9rem;
   display: inline-block;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.status-success {
+  padding: 12px 20px;
+  border-radius: 12px;
+  background-color: var(--success-bg);
+  color: var(--success-text);
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: inline-block;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.status-info {
+  padding: 8px 0;
+  background: transparent;
+  color: var(--text-sub);
+  font-size: 0.85rem;
+  font-weight: 400;
+  display: inline-block;
+  transition: color 0.3s ease;
 }
 
 .progress-bar {
   width: 100%;
   height: 6px;
-  background-color: #E2E8F0;
+  background-color: var(--border-color);
   border-radius: 99px;
   overflow: hidden;
   margin: 25px 0 10px;
+  transition: background-color 0.3s ease;
 }
 
 .progress-fill {
@@ -285,66 +467,119 @@ button:active { transform: scale(0.98); }
   margin-top: 10px;
 }
 
-.result-container {
-  margin-top: 30px;
-  padding: 25px;
-  background: #F8FAFC;
-  border-radius: 20px;
-  border: 1px solid #F1F5F9;
+/* 로딩 스피너 */
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* =========================================
-   📄 PDF Viewer (크기 축소)
+   🎉 Result Display (변환 완료 화면)
    ========================================= */
-.pdf-viewer-container {
-  margin: 15px auto;
-  width: 100%;
-  max-width: 100%;
-  height: 220px; /* 높이 대폭 축소 */
-  border: 1px solid #E2E8F0;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: var(--shadow-soft);
-  display: none; /* 기본적으로 숨김 */
+.result-container {
+  margin-top: 20px;
+  padding: 30px;
+  background: var(--bg-color);
+  border-radius: 20px;
+  border: 1px solid var(--border-light);
+  transition: background 0.3s ease, border-color 0.3s ease;
+  text-align: center;
 }
 
-.pdf-viewer-container iframe {
+/* 완료 텍스트 */
+.result-complete-text {
+  color: var(--success-text);
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 24px 0;
+  text-align: center;
+}
+
+/* 2열 레이아웃 */
+.result-layout {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* 왼쪽: PDF 뷰어 섹션 */
+.pdf-viewer-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.pdf-viewer-wrapper {
+  width: 100%;
+  height: 320px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-soft);
+  background: var(--surface-color);
+  transition: all 0.3s ease;
+}
+
+.pdf-viewer-wrapper:hover {
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-hover);
+}
+
+.pdf-viewer-frame {
   width: 100%;
   height: 100%;
   border: none;
 }
 
-/* =========================================
-   ✨ Result Actions (버튼 수정)
-   ========================================= */
-.action-grid {
+/* 오른쪽: 다운로드 버튼 섹션 */
+.download-section {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin: 15px 0 20px;
+  justify-content: center;
 }
 
+/* 모바일 버튼 (기본 숨김) */
+.mobile-buttons {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* =========================================
+   ✨ Action Buttons
+   ========================================= */
 .btn-action-primary {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 12px 16px;
+  padding: 10px 14px;
   background: var(--primary-color);
   color: white;
   border-radius: 10px;
   text-decoration: none;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   box-shadow: 0 4px 12px -2px rgba(37, 99, 235, 0.25);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  border: 1px solid transparent;
+  border: none;
+  cursor: pointer;
 }
 
 .btn-action-primary:hover {
   background: var(--primary-dark);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   box-shadow: 0 6px 16px -2px rgba(37, 99, 235, 0.35);
 }
 
@@ -354,40 +589,30 @@ button:active { transform: scale(0.98); }
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 12px 16px;
-  background: white;
+  padding: 10px 14px;
+  background: var(--surface-color);
   color: var(--text-main);
-  border: 1px solid #E2E8F0;
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   text-decoration: none;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  cursor: pointer;
 }
 
 .btn-action-secondary:hover {
   border-color: var(--primary-color);
-  background: #F8FAFC;
+  background: var(--bg-color);
   color: var(--primary-color);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(37, 99, 235, 0.1);
 }
 
-/* 다운로드 버튼 가로 배치 */
-.action-grid-row {
-  display: flex;
-  gap: 10px;
-}
-
-.action-grid-row .btn-action-secondary {
-  flex: 1;
-}
-
 .btn-icon {
-  width: 18px;
-  height: 18px;
-  fill: currentColor;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
 }
 
@@ -396,7 +621,7 @@ button:active { transform: scale(0.98); }
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 16px;
+  padding: 10px 18px;
   background: transparent;
   color: var(--text-sub);
   border: 1px solid transparent;
@@ -405,19 +630,158 @@ button:active { transform: scale(0.98); }
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s;
-  margin-top: 5px;
-  width: auto;
+  margin-top: 8px;
 }
 
 .btn-reset-ghost:hover {
-  background: #F1F5F9;
+  background: var(--border-light);
   color: var(--text-main);
   transform: none !important;
   box-shadow: none !important;
 }
 
-/* 모바일 전용/데스크톱 전용 표시 유틸리티 */
-.pdf-viewer-mobile-only { display: none; }
+/* =========================================
+   📘 About Us View
+   ========================================= */
+.about-container {
+  text-align: left;
+}
+
+.about-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.about-header h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 8px 0;
+}
+
+.about-header p {
+  color: var(--text-sub);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.about-section {
+  margin-bottom: 36px;
+}
+
+.about-section h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.about-description {
+  color: var(--text-sub);
+  font-size: 0.95rem;
+  margin: 0 0 20px 0;
+  line-height: 1.6;
+}
+
+/* 기능 리스트 */
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg-color);
+  border-radius: 12px;
+  border: 1px solid var(--border-light);
+  transition: all 0.2s ease;
+}
+
+.feature-item:hover {
+  border-color: var(--border-color);
+}
+
+.feature-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.feature-item strong {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--text-main);
+  margin-bottom: 2px;
+}
+
+.feature-item p {
+  font-size: 0.85rem;
+  color: var(--text-sub);
+  margin: 0;
+}
+
+/* 팀원 그리드 */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.team-card {
+  padding: 16px;
+  background: var(--bg-color);
+  border-radius: 12px;
+  border: 1px solid var(--border-light);
+  transition: all 0.2s ease;
+}
+
+.team-card:hover {
+  border-color: var(--border-color);
+}
+
+.team-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.team-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.team-role {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--primary-color);
+  background: rgba(37, 99, 235, 0.1);
+  padding: 3px 8px;
+  border-radius: 99px;
+}
+
+.team-task {
+  font-size: 0.85rem;
+  color: var(--text-sub);
+  margin: 0;
+}
+
+/* 모바일 대응 */
+@media (max-width: 600px) {
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-header h2 {
+    font-size: 1.6rem;
+  }
+}
 
 /* =========================================
    ⚓ Footer
@@ -426,9 +790,10 @@ button:active { transform: scale(0.98); }
   margin-top: auto;
   padding: 30px 20px;
   text-align: center;
-  border-top: 1px solid #F1F5F9;
+  border-top: 1px solid var(--border-light);
   color: var(--text-sub);
   font-size: 0.9rem;
+  transition: border-color 0.3s ease, color 0.3s ease;
 }
 
 .app-footer a {
@@ -436,25 +801,29 @@ button:active { transform: scale(0.98); }
   text-decoration: none;
   font-weight: 500;
   margin: 0 8px;
+  transition: color 0.3s ease;
 }
 
 .app-footer a:hover { text-decoration: underline; }
 
+.footer-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
 .footer-disclaimer {
-  color: #94A3B8;
+  color: var(--text-sub);
   font-size: 0.85rem;
   margin-top: 12px;
+  opacity: 0.8;
 }
 
 /* =========================================
    📱 Mobile Responsive
    ========================================= */
-@media (min-width: 601px) {
-  /* 데스크톱에서만 PDF 뷰어 표시 */
-  .pdf-viewer-container { display: block; }
-}
-
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .container {
     padding: 30px 20px;
     margin: 20px auto;
@@ -464,13 +833,17 @@ button:active { transform: scale(0.98); }
   .header-nav { display: none; }
   button, #startButton { width: 100%; max-width: none; }
 
-  /* 모바일에서 PDF 뷰어 숨기고 버튼 표시 */
-  .pdf-viewer-container { display: none; }
-  .pdf-viewer-mobile-only { display: flex; }
+  /* 2열 → 1열 전환 */
+  .result-layout {
+    display: none;
+  }
 
-  /* 모바일에서 다운로드 버튼도 세로 배치 */
-  .action-grid-row {
-    flex-direction: column;
+  .mobile-buttons {
+    display: flex;
+  }
+
+  .result-container {
+    padding: 20px;
   }
 }
 

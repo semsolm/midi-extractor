@@ -22,7 +22,7 @@ def run_demucs_separation(input_path, output_dir, job_id):
 
     if not os.path.exists(input_path):
         current_app.logger.error(f"[{job_id}] Demucs 입력 파일 없음: {input_path}")
-        update_job_status(job_id, 'error', '업로드된 오디오 파일을 찾을 수 없습니다.')
+        update_job_status(job_id, 'error', '업로드된 오디오 파일을 찾을 수 없습니다.', progress=0)
         return None
 
     command = [
@@ -40,7 +40,7 @@ def run_demucs_separation(input_path, output_dir, job_id):
         )
     except Exception as e:
         current_app.logger.error(f"[{job_id}] Demucs Popen 단계에서 예외 발생: {e}")
-        update_job_status(job_id, 'error', f"Demucs 실행 자체 실패: {str(e)}")
+        update_job_status(job_id, 'error', f"Demucs 실행 자체 실패: {str(e)}", progress=0)
         return None
 
     current_app.logger.info(f"[{job_id}] Demucs returncode = {result.returncode}")
@@ -54,7 +54,7 @@ def run_demucs_separation(input_path, output_dir, job_id):
             f"STDOUT:\n{result.stdout}\n"
             f"STDERR:\n{result.stderr}"
         )
-        update_job_status(job_id, 'error', f"Demucs 오류: {short_msg}")
+        update_job_status(job_id, 'error', f"Demucs 오류: {short_msg}", progress=0)
         return None
 
     input_filename = os.path.basename(input_path)
@@ -68,7 +68,7 @@ def run_demucs_separation(input_path, output_dir, job_id):
         return separated_drum_file
     else:
         current_app.logger.error(f"[{job_id}] 오류: Demucs 완료 후 파일을 찾을 수 없음.")
-        update_job_status(job_id, 'error', "Demucs 완료했으나 드럼 파일 없음")
+        update_job_status(job_id, 'error', "Demucs 완료했으나 드럼 파일 없음", progress=0)
         return None
 
 
@@ -83,11 +83,11 @@ def generate_midi_with_new_model(drum_audio_path, result_dir, job_id):
 
     if not os.path.exists(model_path):
         current_app.logger.error(f"[{job_id}] 모델 파일을 찾을 수 없음: {model_path}")
-        update_job_status(job_id, 'error', '서버 설정 오류: 모델 파일 없음')
+        update_job_status(job_id, 'error', '서버 설정 오류: 모델 파일 없음', progress=0)
         return False, None, 0, None
 
     try:
-        update_job_status(job_id, 'processing', 'AI 채보 및 MIDI 변환 중...')
+        update_job_status(job_id, 'processing', 'AI 채보 및 MIDI 변환 중...', progress=40)
 
         config = InferenceConfig()
 
@@ -109,7 +109,7 @@ def generate_midi_with_new_model(drum_audio_path, result_dir, job_id):
     except Exception as e:
         error_trace = traceback.format_exc()
         current_app.logger.error(f"[{job_id}] MIDI 생성 실패: {e}\n{error_trace}")
-        update_job_status(job_id, 'error', f'MIDI 변환 실패: {str(e)}')
+        update_job_status(job_id, 'error', f'MIDI 변환 실패: {str(e)}', progress=0)
         return False, None, 0, None
 
 
@@ -168,7 +168,7 @@ def generate_pdf_from_grouped_events(grouped_events, bpm, pdf_output_path, job_i
     """
     from app.tasks import update_job_status
 
-    update_job_status(job_id, 'processing', 'MIDI 파일을 악보(PDF)로 변환 중...')
+    update_job_status(job_id, 'processing', 'MIDI 파일을 악보(PDF)로 변환 중...', progress=70)
     musescore_path = current_app.config['MUSESCORE_PATH']
 
     if not os.path.exists(musescore_path):
@@ -246,6 +246,7 @@ def generate_pdf_from_grouped_events(grouped_events, bpm, pdf_output_path, job_i
         # 3. 악보 포맷팅 (쉼표 최소화)
         # ========================================
         current_app.logger.info(f"[{job_id}] 악보 포맷팅 중...")
+        update_job_status(job_id, 'processing', '악보 포맷팅 중...', progress=80)
 
         # Voice로 묶어서 쉼표 자동 생성 제어
         for measure in drum_part.getElementsByClass('Measure'):
@@ -286,6 +287,8 @@ def generate_pdf_from_grouped_events(grouped_events, bpm, pdf_output_path, job_i
     # ========================================
     try:
         current_app.logger.info(f"[{job_id}] PDF 생성 중...")
+        update_job_status(job_id, 'processing', 'PDF 파일 생성 중...', progress=90)
+
         command = [musescore_path, '-o', pdf_output_path, xml_temp_path]
         result = subprocess.run(command, capture_output=True, text=True, timeout=60)
 
@@ -324,14 +327,16 @@ def run_processing_pipeline(job_id, audio_path, original_filename=None):
     result_dir = os.path.join(current_app.config['RESULT_FOLDER'], job_id)
     os.makedirs(result_dir, exist_ok=True)
 
-    # 1. 드럼 분리 (Demucs)
-    update_job_status(job_id, 'processing', '배경음 제거 및 드럼 분리 중...')
+    # 1. 드럼 분리 (Demucs) - 10%~30%
+    update_job_status(job_id, 'processing', '배경음 제거 및 드럼 분리 중...', progress=10)
     separated_drum_path = run_demucs_separation(audio_path, result_dir, job_id)
 
     if not separated_drum_path:
         return
 
-    # 2. MIDI 생성 (BiGRU Model + con_midi_maker)
+    update_job_status(job_id, 'processing', '드럼 트랙 분리 완료!', progress=30)
+
+    # 2. MIDI 생성 (BiGRU Model + con_midi_maker) - 40%~60%
     #    ✅ grouped_events도 함께 받아옴!
     success, generated_midi_path, detected_bpm, grouped_events = generate_midi_with_new_model(
         drum_audio_path=separated_drum_path,
@@ -342,6 +347,8 @@ def run_processing_pipeline(job_id, audio_path, original_filename=None):
     if not success or not generated_midi_path:
         return
 
+    update_job_status(job_id, 'processing', 'MIDI 생성 완료!', progress=60)
+
     try:
         # 3. 파일명 변경
         final_midi_path = os.path.join(result_dir, f"{job_id}.mid")
@@ -351,7 +358,7 @@ def run_processing_pipeline(job_id, audio_path, original_filename=None):
         else:
             raise FileNotFoundError(f"MIDI 파일 생성 실패: {generated_midi_path} 없음")
 
-        # 4. PDF 생성 - grouped_events 직접 사용!
+        # 4. PDF 생성 - grouped_events 직접 사용! - 70%~90%
         pdf_path = os.path.join(result_dir, f"{job_id}.pdf")
 
         # [수정] 원본 파일명이 있으면 사용, 없으면 기존 방식 (fallback)
@@ -370,14 +377,14 @@ def run_processing_pipeline(job_id, audio_path, original_filename=None):
             title=title
         )
 
-        # 5. 완료
+        # 5. 완료 - 100%
         results = {
             "midiUrl": f"/download/midi/{job_id}",
             "pdfUrl": f"/download/pdf/{job_id}",
             "bpm": detected_bpm
         }
-        update_job_status(job_id, 'completed', '변환 완료!', results=results)
+        update_job_status(job_id, 'completed', '변환 완료!', progress=100, results=results)
 
     except Exception as e:
         current_app.logger.error(f"[{job_id}] 처리 중 오류: {e}")
-        update_job_status(job_id, 'error', f'오류 발생: {str(e)}')
+        update_job_status(job_id, 'error', f'오류 발생: {str(e)}', progress=0)

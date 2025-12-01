@@ -1,52 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import * as api from './services/api';
 import { UploadForm } from './components/UploadForm.jsx';
 import { StatusTracker } from './components/StatusTracker.jsx';
 import { ResultDisplay } from './components/ResultDisplay.jsx';
-
-// [컴포넌트] MIDI to PDF 뷰 (준비중)
-const MidiToPdfView = () => (
-  <div className="menu-view">
-    <h3>🎼 MIDI to PDF</h3>
-    <p>
-      MIDI 파일을 업로드하면 고품질 PDF 악보로 변환해 드립니다.<br />
-      현재 기능 준비 중입니다. 조금만 기다려주세요!
-    </p>
-  </div>
-);
+import { AboutUsView } from './components/AboutUsView.jsx';
 
 // [컴포넌트] 도움말 뷰
 const HelpView = () => (
   <div className="menu-view">
     <h3>도움말 및 정보</h3>
     <p>
-      본 시스템은 <strong>Deep Learning</strong> 기술을 활용하여<br/>
-      WAV 오디오를 MIDI와 악보로 정밀하게 변환합니다.
+      본 시스템은 드럼 오디오를 MIDI와 악보로 자동 변환하는 AI 기반 프로젝트입니다.<br/>
+      자세한 내용은 <a href="https://github.com/semsolm/midi-extractor" target="_blank" rel="noopener noreferrer">GitHub 프로젝트 페이지</a>를 확인해주세요.
     </p>
-    <p style={{ marginTop: '20px', fontSize: '0.9rem', color: '#64748B' }}>
-      자세한 기술 스택과 코드는 <br/>
-      <a href="https://github.com/semsolm/midi-extractor" target="_blank" rel="noopener noreferrer">GitHub 프로젝트 페이지</a>에서 확인하실 수 있습니다.
-    </p>
+    <p>문의사항은 '오류/건의' 링크를 이용해 주세요. 🤝</p>
   </div>
 );
 
 // [상수] 푸터 콘텐츠
 const APP_FOOTER_CONTENT = (
-    <>
-        <div className="footer-links">
-            <a href="https://github.com/semsolm/midi-extractor/blob/main/readme.md" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
-            <span style={{color: '#cbd5e1'}}>|</span>
-            <a href="https://github.com/semsolm/midi-extractor/issues" target="_blank" rel="noopener noreferrer">Report Issue</a>
-        </div>
+  <>
+    <div className="footer-links">
+      <a href="https://github.com/semsolm/midi-extractor/blob/main/readme.md" target="_blank" rel="noopener noreferrer">개인정보처리방침</a>
+      <span>|</span>
+      <a href="https://github.com/semsolm/midi-extractor/issues" target="_blank" rel="noopener noreferrer">오류/건의</a>
+    </div>
 
-        <p style={{ marginTop: '20px', fontWeight: 600 }}>© 2025 Team 경로당. All Rights Reserved.</p>
+    <p>Copyright © 2025. Team 경로당. All Rights Reserved.</p>
+    <p>본 시스템은 [안양대학교 캡스톤 디자인 수업] 의 팀 프로젝트로 제작되었습니다.</p>
 
-        <p className="footer-disclaimer">
-            본 시스템은 [안양대학교 캡스톤 디자인] 프로젝트의 일환으로 제작되었습니다.<br />
-            학습 및 비영리 목적으로만 사용 가능하며, 생성된 데이터의 정확성을 보장하지 않습니다.
-        </p>
-    </>
+    <p className="footer-disclaimer">
+      본 시스템은 학습 및 비영리 목적으로만 무료로 사용할 수 있습니다.<br />
+      생성된 악보의 정확성을 보장하지 않으며, 사용으로 인한 법적 책임을 지지 않습니다.
+    </p>
+  </>
 );
 
 function App() {
@@ -56,15 +44,37 @@ function App() {
   const [jobResult, setJobResult] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // 메뉴 상태 (기본값을 wav로 변경)
+  // 메뉴 상태 (WAV로 변경)
   const [currentMenu, setCurrentMenu] = useState('wav to midi');
 
-  // 메뉴 리스트 정의 (MP3 -> WAV 수정)
+  // 메뉴 리스트 정의
   const MENU_ITEMS = [
     { id: 'wav to midi', label: 'WAV to MIDI' },
-    { id: 'midi to pdf', label: 'MIDI to PDF' },
+    { id: 'About Us', label: 'About Us' },
     { id: 'help', label: 'Help' },
   ];
+
+  // 🌙 다크모드 상태
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved ? JSON.parse(saved) : false;
+  });
+
+  // 다크모드 토글 함수
+  const toggleDarkMode = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    localStorage.setItem('darkMode', JSON.stringify(newMode));
+  };
+
+  // 다크모드 클래스 적용
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark-mode');
+    } else {
+      document.documentElement.classList.remove('dark-mode');
+    }
+  }, [isDarkMode]);
 
   // 1. 업로드 핸들러
   const handleUpload = async (file) => {
@@ -103,7 +113,6 @@ function App() {
   // 5. 메뉴 클릭 핸들러
   const handleMenuClick = (menuName) => {
     setCurrentMenu(menuName);
-    // WAV 메뉴를 클릭하면 메인 기능 초기화
     if (menuName === 'wav to midi') {
       handleReset();
     }
@@ -142,9 +151,9 @@ function App() {
               {errorMessage}
             </div>
             <div style={{ marginTop: '20px' }}>
-                <button onClick={handleReset} className="button-primary">
+              <button onClick={handleReset} className="button-primary">
                 다시 시도
-                </button>
+              </button>
             </div>
           </div>
         );
@@ -156,7 +165,7 @@ function App() {
   // 메뉴별 컨텐츠 렌더링
   const renderContent = () => {
     switch (currentMenu) {
-      case 'wav to midi': // id 변경됨
+      case 'wav to midi':
         return (
           <>
             <h2 className="main-title">
@@ -172,8 +181,8 @@ function App() {
             {renderMainContent()}
           </>
         );
-      case 'midi to pdf':
-        return <MidiToPdfView />;
+      case 'About Us':
+        return <AboutUsView />;
       case 'help':
         return <HelpView />;
       default:
@@ -204,6 +213,20 @@ function App() {
                 {item.label}
               </button>
             ))}
+
+            {/* 다크모드 토글 스위치 */}
+            <div className="dark-mode-toggle-wrapper">
+              <div className="checkbox model-1">
+                <input
+                  type="checkbox"
+                  id="dark-mode-toggle"
+                  checked={isDarkMode}
+                  onChange={toggleDarkMode}
+                  aria-label={isDarkMode ? '라이트 모드로 전환' : '다크 모드로 전환'}
+                />
+                <label htmlFor="dark-mode-toggle"></label>
+              </div>
+            </div>
           </nav>
         </div>
       </header>

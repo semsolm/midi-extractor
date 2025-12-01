@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { pop } from '../utils/particleEffect';
 
 const API_PROCESS_URL = 'http://127.0.0.1:5000/api/process';
 
@@ -85,7 +86,10 @@ export function UploadForm({ onUpload, isLoading }) {
               <button
                 type="button"
                 className="drop-button"
-                onClick={() => document.getElementById('fileInput').click()}
+                onClick={(e) => {
+                  pop(e, "circle"); // 1. 파티클 효과 팡! (네모 모양)
+                  document.getElementById('fileInput').click(); // 2. 파일 선택창 열기
+                }}
                 disabled={isLoading}
               >
                 파일 선택
@@ -94,21 +98,21 @@ export function UploadForm({ onUpload, isLoading }) {
           )}
         </label>
       </div>
-
-      {/* === 오디오 미리듣기 === */}
-      {audioPreview && (
-        <div id="playerContainer" style={{ display: 'block' }}>
-          <p id="listenText">들어보기 :</p>
-          <audio id="audioPlayer" controls src={audioPreview}></audio>
-        </div>
-      )}
+     
 
       {/* === 변환 시작 버튼 === */}
       <div className="controls">
         <button
           id="startButton"
-          type="submit"
+          type="button" /* [수정] submit -> button으로 변경하여 자동 제출 방지 */
           disabled={!file || isLoading}
+          onClick={(e) => { pop(e, "circle") 
+            
+            setTimeout(() => {
+               if (file) onUpload(file);
+            }, 700);
+
+          }} //파티클 효과
         >
           {isLoading ? '업로드 중...' : '변환 시작'}
         </button>
@@ -117,6 +121,6 @@ export function UploadForm({ onUpload, isLoading }) {
       <div id="statusMessageElement" className="status-info">
         {file ? `'${file.name}' 파일이 선택되었습니다.` : "파일을 선택하고 '변환 시작'을 눌러주세요."}
       </div>
-    </form>
+    </form> 
   );
 }

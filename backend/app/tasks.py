@@ -5,13 +5,22 @@ from flask import current_app
 jobs = {}
 
 
-def update_job_status(job_id, status, message, results=None):
-    """작업의 상태를 업데이트합니다."""
+def update_job_status(job_id, status, message, progress=0, results=None):
+    """작업의 상태를 업데이트합니다.
+
+    Args:
+        job_id: 작업 고유 ID
+        status: 작업 상태 ('pending', 'processing', 'completed', 'error')
+        message: 상태 메시지
+        progress: 진행률 (0~100)
+        results: 완료 시 결과 데이터
+    """
     if job_id not in jobs:
-        jobs[job_id] = {'status': 'pending', 'message': '대기 중'}
+        jobs[job_id] = {'status': 'pending', 'message': '대기 중', 'progress': 0}
 
     jobs[job_id]['status'] = status
     jobs[job_id]['message'] = message
+    jobs[job_id]['progress'] = progress
 
     if results:
         jobs[job_id]['results'] = results
