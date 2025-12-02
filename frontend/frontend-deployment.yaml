@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: midi-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: midi-frontend
+  template:
+    metadata:
+      labels:
+        app: midi-frontend
+    spec:
+      containers:
+      - name: midi-frontend
+        # [확인] 본인의 이미지 주소가 맞는지 확인하세요
+        image: asia-northeast3-docker.pkg.dev/midi-extractor/midi-repo/midi-frontend:v1
+        ports:
+        - containerPort: 80
+        # [추가] 자원 요청 및 제한 설정
+        resources:
+          requests:
+            memory: "128Mi"  # 최소 필요 메모리
+            cpu: "100m"      # 최소 필요 CPU (0.1코어)
+          limits:
+            memory: "256Mi"  # 최대 사용 메모리
+            cpu: "200m"      # 최대 사용 CPU (0.2코어)
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: midi-frontend-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: midi-frontend
+  ports:
+  - port: 80
+    targetPort: 80

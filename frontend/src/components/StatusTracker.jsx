@@ -5,6 +5,8 @@ import React, { useState, useEffect, useRef } from 'react';
 export function StatusTracker({ jobId, onComplete, onError }) {
   // 백엔드 tasks.py의 'message' 필드를 표시
   const [statusMessage, setStatusMessage] = useState('서버에 작업을 요청하는 중...');
+  // 진행률 상태 추가 (0~100)
+  const [progress, setProgress] = useState(0);
   const intervalRef = useRef(null);
 
   useEffect(() => {
@@ -17,8 +19,14 @@ export function StatusTracker({ jobId, onComplete, onError }) {
         // audio_processor.py의 tqdm 메시지 등을 그대로 표시
         setStatusMessage(data.message || '상태 확인 중...');
 
+        // 진행률 업데이트 (백엔드에서 progress 필드를 보내는 경우)
+        if (data.progress !== undefined) {
+          setProgress(data.progress);
+        }
+
         if (data.status === 'completed') {
           clearInterval(intervalRef.current);
+          setProgress(100); // 완료 시 100%
           onComplete(data.results); // App.js에 완료 알림
         } else if (data.status === 'error') {
           clearInterval(intervalRef.current);
@@ -31,7 +39,7 @@ export function StatusTracker({ jobId, onComplete, onError }) {
       }
     };
 
-    // 1.5초마다 상태 확인
+    // 1초마다 상태 확인
     intervalRef.current = setInterval(checkStatus, 1000);
 
     // 컴포넌트 unmount 시 interval 정리
@@ -40,12 +48,27 @@ export function StatusTracker({ jobId, onComplete, onError }) {
 
   return (
     <div className="status-container">
-      {/* index_test.html의 스피너 스타일 */}
-      <div id="spinnerContainer" style={{ display: 'flex' }}>
+      {/* 스피너 */}
+      <div id="spinnerContainer" style={{ display: 'flex', justifyContent: 'center' }}>
         <div className="loader"></div>
       </div>
+
+      {/* 상태 메시지 */}
       <div id="statusMessageElement" className="status-info">
         {statusMessage}
+      </div>
+
+      {/* 진행률 바 */}
+      <div className="progress-bar">
+        <div
+          className="progress-fill"
+          style={{ width: `${progress}%` }}
+        ></div>
+      </div>
+
+      {/* 진행률 텍스트 */}
+      <div className="progress-text">
+        작업 진척도: {progress}%
       </div>
     </div>
   );
