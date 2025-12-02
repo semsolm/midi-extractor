@@ -5,18 +5,19 @@ import { UploadForm } from './components/UploadForm.jsx';
 import { StatusTracker } from './components/StatusTracker.jsx';
 import { ResultDisplay } from './components/ResultDisplay.jsx';
 import { AboutUsView } from './components/AboutUsView.jsx';
+import { HelpView } from './components/HelpView.jsx';
 
 // [컴포넌트] 도움말 뷰
-const HelpView = () => (
-  <div className="menu-view">
-    <h3>도움말 및 정보</h3>
-    <p>
-      본 시스템은 드럼 오디오를 MIDI와 악보로 자동 변환하는 AI 기반 프로젝트입니다.<br />
-      자세한 내용은 <a href="https://github.com/semsolm/midi-extractor" target="_blank" rel="noopener noreferrer">GitHub 프로젝트 페이지</a>를 확인해주세요.
-    </p>
-    <p>문의사항은 '오류/건의' 링크를 이용해 주세요. 🤝</p>
-  </div>
-);
+// const HelpView = () => (
+//   <div className="menu-view">
+//     <h3>도움말 및 정보</h3>
+//     <p>
+//       본 시스템은 드럼 오디오를 MIDI와 악보로 자동 변환하는 AI 기반 프로젝트입니다.<br />
+//       자세한 내용은 <a href="https://github.com/semsolm/midi-extractor" target="_blank" rel="noopener noreferrer">GitHub 프로젝트 페이지</a>를 확인해주세요.
+//     </p>
+//     <p>문의사항은 '오류/건의' 링크를 이용해 주세요. 🤝</p>
+//   </div>
+// );
 
 // [상수] 푸터 콘텐츠
 const APP_FOOTER_CONTENT = (
