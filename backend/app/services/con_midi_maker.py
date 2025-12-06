@@ -212,7 +212,7 @@ class InferenceConfig:
         # quantize_bias 하향 조정 (핵심 수정!)
         # 기존: 0.5는 반올림이라 다음 그리드로 밀림
         # 수정: 0.3~0.4로 낮춰서 현재 그리드에 머무르게
-        self.quantize_bias = {'kick': 0, 'snare': 0, 'hihat': 1}  # 기존: 0.5, 0.35, 0.28
+        self.quantize_bias = {'kick': 0, 'snare': 0, 'hihat': 0}  # 기존: 0.5, 0.35, 0.28
 
         self.simultaneous_window_ms = 50
 
