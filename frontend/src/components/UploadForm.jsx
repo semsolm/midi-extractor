@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { pop } from '../utils/particleEffect';
+import uploadArrow from '../assets/upload_arrow.png';
 
 const API_PROCESS_URL = 'http://127.0.0.1:5000/api/process';
 
@@ -68,7 +69,6 @@ export function UploadForm({ onUpload, isLoading }) {
           id="fileInput"
           name="file"
           accept="audio/*"
-          capture="microphone"
           onChange={handleFileChange}
           disabled={isLoading}
           hidden
@@ -82,12 +82,19 @@ export function UploadForm({ onUpload, isLoading }) {
             </>
           ) : (
             <>
+            <div className="circle-wrapper">
+                <img 
+                  src={uploadArrow} 
+                  alt="Upload Arrow" 
+                  className="upload-icon-img" 
+                />
+              </div>
               <p>🎵 파일을 이곳에 드래그하세요! </p>
               <button
                 type="button"
                 className="drop-button"
                 onClick={(e) => {
-                  pop(e, "circle"); // 1. 파티클 효과 팡! (네모 모양)
+                  pop(e, "circle"); // 1. 파티클 효과
                   document.getElementById('fileInput').click(); // 2. 파일 선택창 열기
                 }}
                 disabled={isLoading}
