@@ -2,11 +2,36 @@ import React from 'react';
 
 export function AboutUsView() {
   const teamMembers = [
-    { name: '윤상일', id: '2020E7424', role: 'AI/ML', task: '모델 설계 및 학습' },
-    { name: '양태양', id: '2021E7411', role: 'Frontend', task: 'UI 개발' },
-    { name: '최유진', id: '2023E7518', role: 'Frontend', task: 'UI 디자인' },
-    { name: '이준행', id: '2020E7427', role: 'Backend', task: 'AI, 풀스택 개발' },
-    { name: '정서영', id: '2020U2329', role: 'Backend', task: '백엔드, 프론트엔드 지원' },
+    {
+      name: '윤상일',
+      role: 'AI/ML',
+      task: '모델 설계 및 학습',
+      github: 'https://github.com/semsolm'
+    },
+    {
+      name: '양태양',
+      role: 'Frontend',
+      task: '프론트엔드 개발',
+      github: 'https://github.com/sunning838'
+    },
+    {
+      name: '최유진',
+      role: 'Frontend',
+      task: 'UI 디자인',
+      github: 'https://github.com/cyj4795'
+    },
+    {
+      name: '이준행',
+      role: 'Backend',
+      task: 'PM / 백엔드 개발',
+      github: 'https://github.com/LeopoldBloom2K'
+    },
+    {
+      name: '정서영',
+      role: 'Backend',
+      task: '백엔드, 프론트엔드 지원',
+      github: 'https://github.com/seoyzz'
+    },
   ];
 
   return (
@@ -52,15 +77,25 @@ export function AboutUsView() {
       {/* 팀원 소개 */}
       <section className="about-section">
         <h3>팀원 소개</h3>
+        <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', marginBottom: '10px' }}>
+          * 카드를 클릭하면 Github 페이지로 이동합니다.
+        </p>
         <div className="team-grid">
           {teamMembers.map((member, index) => (
-            <div className="team-card" key={index}>
+            <a
+              className="team-card"
+              key={index}
+              href={member.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: 'none', display: 'block', cursor: 'pointer' }}
+            >
               <div className="team-card-header">
                 <span className="team-name">{member.name}</span>
                 <span className="team-role">{member.role}</span>
               </div>
               <p className="team-task">{member.task}</p>
-            </div>
+            </a>
           ))}
         </div>
       </section>
