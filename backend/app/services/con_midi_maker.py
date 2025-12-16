@@ -192,15 +192,9 @@ class InferenceConfig:
         self.hop_size = 1000
 
         self.thresholds = {
-<<<<<<< HEAD
-            'kick': 0.45,
-            'snare': 0.38,
-            'hihat': 0.15
-=======
             'kick': 0.5,
             'snare': 0.55,
             'hihat': 0.1
->>>>>>> dev
         }
         self.bpm_start_range = 60
         self.bpm_end_range = 200
@@ -211,11 +205,6 @@ class InferenceConfig:
         # 모든 드럼 타입을 16분음표 그리드로 통일
         self.grid_division = {'kick': 16, 'snare': 16, 'hihat': 8}  # hihat: 8 → 16
         self.default_grid_division = 16
-<<<<<<< HEAD
-        self.merge_window_ms = 70
-        self.min_gap_ms = {'kick': 90, 'snare': 70, 'hihat': 30}
-        self.quantize_bias = {'kick': 0.5, 'snare': 0.35, 'hihat': 0.28}
-=======
 
         self.merge_window_ms = 70
         self.min_gap_ms = {'kick': 90, 'snare': 70, 'hihat': 30}
@@ -225,7 +214,6 @@ class InferenceConfig:
         # 수정: 0.3~0.4로 낮춰서 현재 그리드에 머무르게
         self.quantize_bias = {'kick': 0, 'snare': 0, 'hihat': 0}  # 기존: 0.5, 0.35, 0.28
 
->>>>>>> dev
         self.simultaneous_window_ms = 50
 
         # MIDI 매핑
@@ -468,21 +456,8 @@ class PrecisionBPMEstimator:
         return weighted_sum / total_weight
 
     def _refine_to_common_bpm(self, bpm: float) -> float:
-<<<<<<< HEAD
-        """
-        일반적인 정수 BPM과의 거리 기반 미세 조정
-
-        음악은 대부분 정수 BPM으로 제작되므로,
-        추정치가 정수에 매우 가까우면 반올림
-        """
-        rounded = round(bpm)
-
-        # 정수와의 차이가 0.5 이하면 정수로 반올림 (기존 0.3에서 확대)
-        if abs(bpm - rounded) <= 0.5:
-=======
         rounded = round(bpm)
         if abs(bpm - rounded) < 0.5:
->>>>>>> dev
             return float(rounded)
         return round(bpm, 2)
 
@@ -529,32 +504,14 @@ def detect_peaks(predictions, config, frame_times):
     drum_types = ['kick', 'snare', 'hihat']
     onsets = {dt: [] for dt in drum_types}
 
-<<<<<<< HEAD
-    # 타이밍 보정값 (초): 음수 = 앞으로 당김
-    timing_correction = {
-        'kick':  0,  # 30ms 앞으로
-        'snare': 0,
-        'hihat': 0
-    }
-
     for i, dt in enumerate(drum_types):
         probs = predictions[:, i]
         threshold = config.thresholds[dt]
-        correction = timing_correction.get(dt, 0)
-=======
-    for i, dt in enumerate(drum_types):
-        probs = predictions[:, i]
-        threshold = config.thresholds[dt]
->>>>>>> dev
 
         indices = np.where((probs[:-1] < threshold) & (probs[1:] >= threshold))[0] + 1
 
         for idx in indices:
-<<<<<<< HEAD
-            t = frame_times[idx] + correction
-=======
             t = frame_times[idx]
->>>>>>> dev
             if t >= 0:
                 onsets[dt].append(t)
 
@@ -597,15 +554,6 @@ def enforce_minimum_gap(onsets, config):
 
 def quantize_to_grid(onsets, bpm, config):
     """
-<<<<<<< HEAD
-    onset 시간을 BPM 기반 그리드에 양자화
-
-    개선사항:
-    - 첫 onset을 기준으로 시간 오프셋 계산
-    - 오디오 앞부분 무음으로 인한 박자 밀림 보정
-    """
-    # 1. 모든 onset 중 가장 빠른 시간 찾기
-=======
     onset 시간을 BPM 기반 그리드에 양자화 (수정된 버전)
 
     핵심 수정사항:
@@ -613,7 +561,6 @@ def quantize_to_grid(onsets, bpm, config):
     2. quantize_bias 하향 조정으로 밀림 방지
     3. 첫 마디 시작점 보정
     """
->>>>>>> dev
     all_times = []
     for times in onsets.values():
         all_times.extend(times)
@@ -622,30 +569,6 @@ def quantize_to_grid(onsets, bpm, config):
         return {dt: [] for dt in onsets.keys()}
 
     first_onset = min(all_times)
-<<<<<<< HEAD
-
-    # 2. 기준 그리드 간격 (kick 기준, 가장 정밀한 16분음표)
-    base_grid = config.get_grid_interval(bpm, 'kick')
-
-    # 3. 첫 onset의 그리드 내 위치 계산
-    grid_position = first_onset % base_grid
-
-    # 4. 오프셋 결정: 첫 onset을 가장 가까운 그리드로 이동
-    if grid_position < base_grid * 0.5:
-        time_offset = -grid_position  # 앞으로 당김
-    else:
-        time_offset = base_grid - grid_position  # 다음 그리드로
-
-    # 5. 첫 onset이 1박 이상 뒤에 있으면 의도적 쉼표로 판단
-    one_beat = 60.0 / bpm
-    if first_onset > one_beat * 1.5:
-        time_offset = 0
-        print(f"  [양자화] 첫 onset({first_onset:.3f}s)이 1박 이상 뒤 → 오프셋 미적용")
-    else:
-        print(f"  [양자화] 첫 onset: {first_onset:.3f}s → 오프셋: {time_offset:+.3f}s")
-
-    # 6. 각 드럼 타입별 양자화
-=======
     one_beat = 60.0 / bpm
     base_grid = config.get_grid_interval(bpm, 'kick')  # 16분음표 간격
 
@@ -678,7 +601,6 @@ def quantize_to_grid(onsets, bpm, config):
     # ============================================
     # 각 드럼 타입별 양자화
     # ============================================
->>>>>>> dev
     quantized_onsets = {}
     for dt, times in onsets.items():
         if not times:
@@ -694,13 +616,9 @@ def quantize_to_grid(onsets, bpm, config):
             if t_adjusted < 0:
                 t_adjusted = 0
 
-<<<<<<< HEAD
-            grid_index = math.floor((t_adjusted / grid_interval) + bias)
-=======
             # 수정된 양자화: floor 대신 round에 가깝게
             # bias가 0.4면, 그리드의 40% 지점을 기준으로 판단
             grid_index = int((t_adjusted / grid_interval) + bias)
->>>>>>> dev
             quantized_time = grid_index * grid_interval
 
             if quantized_time >= 0:
