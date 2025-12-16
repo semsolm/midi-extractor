@@ -248,7 +248,7 @@ function App() {
             title="홈으로 이동"
           >
             <span className="app-logo">🎵</span>
-            <span className="app-title">Midi-Extractor</span>
+            <span className="app-title">만드럼</span>
           </div>
 
           <nav className="header-nav">
