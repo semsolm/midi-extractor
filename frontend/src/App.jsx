@@ -5,18 +5,19 @@ import { UploadForm } from './components/UploadForm.jsx';
 import { StatusTracker } from './components/StatusTracker.jsx';
 import { ResultDisplay } from './components/ResultDisplay.jsx';
 import { AboutUsView } from './components/AboutUsView.jsx';
+import { HelpView } from './components/HelpView.jsx';
 
 // [컴포넌트] 도움말 뷰
-const HelpView = () => (
-  <div className="menu-view">
-    <h3>도움말 및 정보</h3>
-    <p>
-      본 시스템은 드럼 오디오를 MIDI와 악보로 자동 변환하는 AI 기반 프로젝트입니다.<br/>
-      자세한 내용은 <a href="https://github.com/semsolm/midi-extractor" target="_blank" rel="noopener noreferrer">GitHub 프로젝트 페이지</a>를 확인해주세요.
-    </p>
-    <p>문의사항은 '오류/건의' 링크를 이용해 주세요. 🤝</p>
-  </div>
-);
+// const HelpView = () => (
+//   <div className="menu-view">
+//     <h3>도움말 및 정보</h3>
+//     <p>
+//       본 시스템은 드럼 오디오를 MIDI와 악보로 자동 변환하는 AI 기반 프로젝트입니다.<br />
+//       자세한 내용은 <a href="https://github.com/semsolm/midi-extractor" target="_blank" rel="noopener noreferrer">GitHub 프로젝트 페이지</a>를 확인해주세요.
+//     </p>
+//     <p>문의사항은 '오류/건의' 링크를 이용해 주세요. 🤝</p>
+//   </div>
+// );
 
 // [상수] 푸터 콘텐츠
 const APP_FOOTER_CONTENT = (
@@ -169,12 +170,12 @@ function App() {
         return (
           <>
             <h2 className="main-title">
-              Music, <br/>
+              Music, <br />
               <span>Transformed by AI.</span>
             </h2>
 
             <p className="subtitle">
-              음악(WAV)을 MIDI와 악보로 변환하세요.<br/>
+              음악(WAV)을 MIDI와 악보로 변환하세요.<br />
               AI 기술이 당신의 음악 작업을 돕습니다.
             </p>
 
@@ -190,17 +191,63 @@ function App() {
     }
   };
 
+  //모바일 사이드바 관련
+
+  //사이드 메뉴 열림/닫힘 상태
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  //메뉴 토글 함수
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  // 모바일 메뉴 클릭 시 닫기 처리
+  const handleMobileMenuClick = (menuId) => {
+    handleMenuClick(menuId);
+    setIsMenuOpen(false);
+  };
+
   return (
     <>
+      <div
+        className={`menu-overlay ${isMenuOpen ? 'open' : ''}`}
+        onClick={toggleMenu}
+      />
+
+      {/*모바일 사이드 메뉴 패널*/}
+      <aside className={`side-menu ${isMenuOpen ? 'open' : ''}`}>
+
+
+        {/* 메뉴 리스트 (위쪽 여백 추가) */}
+        <nav className="side-nav-list" style={{ marginTop: '20px' }}>
+          {MENU_ITEMS.map((item) => (
+            <button
+              key={item.id}
+              className={`side-nav-item ${currentMenu === item.id ? 'active' : ''}`}
+              onClick={() => handleMobileMenuClick(item.id)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+      </aside>
+
       <header className="app-header">
         <div className="header-content">
+          <button className="hamburger-btn" onClick={toggleMenu} aria-label="메뉴 열기">
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
           <div
             className="logo-section"
             onClick={() => handleMenuClick('wav to midi')}
             title="홈으로 이동"
           >
             <span className="app-logo">🎵</span>
-            <span className="app-title">Midi-Extractor</span>
+            <span className="app-title">만드럼</span>
           </div>
 
           <nav className="header-nav">
@@ -214,7 +261,7 @@ function App() {
               </button>
             ))}
 
-            {/* 다크모드 토글 스위치 */}
+            {/* PC용 다크모드 버튼 */}
             <div className="dark-mode-toggle-wrapper">
               <div className="checkbox model-1">
                 <input
@@ -222,12 +269,25 @@ function App() {
                   id="dark-mode-toggle"
                   checked={isDarkMode}
                   onChange={toggleDarkMode}
-                  aria-label={isDarkMode ? '라이트 모드로 전환' : '다크 모드로 전환'}
                 />
                 <label htmlFor="dark-mode-toggle"></label>
               </div>
             </div>
           </nav>
+
+          {/* 모바일용 다크모드 버튼*/}
+          <div className="mobile-toggle-wrapper">
+            <div className="checkbox model-1">
+              <input
+                type="checkbox"
+                id="dark-mode-toggle-mobile"
+                checked={isDarkMode}
+                onChange={toggleDarkMode}
+              />
+              <label htmlFor="dark-mode-toggle-mobile"></label>
+            </div>
+          </div>
+
         </div>
       </header>
 
@@ -240,6 +300,10 @@ function App() {
       </footer>
     </>
   );
+
+
+
+
 }
 
 export default App;

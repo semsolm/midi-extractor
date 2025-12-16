@@ -85,7 +85,8 @@ body {
   background-image: var(--bg-gradient);
   background-repeat: no-repeat;
   min-height: 100vh;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  /*transition: background-color 0.3s ease, color 0.3s ease;*/
+  transition: all 0.3s ease;
 }
 
 #root {
@@ -106,7 +107,8 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  transition: background 0.3s ease, border-color 0.3s ease;
+  /* transition: background 0.3s ease, border-color 0.3s ease; */
+  transition: all 0.3s ease;
 }
 
 .header-content {
@@ -127,6 +129,10 @@ body {
 
 .logo-section:hover {
   opacity: 0.7;
+}
+
+.app-logo {
+  font-size: 1.4rem;
 }
 
 .app-logo { font-size: 1.4rem; }
@@ -233,11 +239,11 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.checkbox.model-1 input[type="checkbox"]:checked + label {
+.checkbox.model-1 input[type="checkbox"]:checked+label {
   background: var(--primary-color);
 }
 
-.checkbox.model-1 input[type="checkbox"]:checked + label::before {
+.checkbox.model-1 input[type="checkbox"]:checked+label::before {
   content: '🌙';
   left: calc(100% - 24px);
 }
@@ -255,7 +261,9 @@ body {
   margin: 40px auto;
   text-align: center;
   animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-  transition: background 0.3s ease, box-shadow 0.3s ease;
+  /* transition: background 0.3s ease, border-color 0.3s ease; */
+  transition: all 0.3s ease;
+  min-height: 520px;
 }
 
 .main-title {
@@ -346,7 +354,7 @@ body {
   font-weight: 500;
 }
 
-.drop-label::before {
+/* .drop-label::before {
   content: '↓';
   font-size: 1.8rem;
   color: var(--primary-color);
@@ -362,11 +370,48 @@ body {
   transition: transform 0.3s;
 }
 
-.drop-zone:hover .drop-label::before { transform: translateY(4px); }
+.drop-zone:hover .drop-label::before {
+  transform: translateY(4px);
+} */
+
+/* 업로드 버튼 아이콘  */
+.circle-wrapper {
+  background: var(--surface-color); /* 하얀 배경 */
+  width: 45px;
+  height: 45px;
+  border-radius: 50%; /* 완전한 원형 */
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  box-shadow: var(--shadow-soft); /* 그림자 효과 */
+  margin-bottom: 8px;
+  transition: transform 0.3s;
+}
+
+.dark-mode .upload-icon-img {
+  filter: invert(100%) brightness(100%);
+}
+
+/* 마우스 올렸을 때 동그라미가 살짝 움직이는 효과 */
+.drop-zone:hover .circle-wrapper {
+  transform: translateY(4px);
+}
+
+/* 👇 [신규] 동그라미 안쪽의 이미지 스타일 */
+.upload-icon-img {
+  width: 20px; /* 이미지 크기 조절 (동그라미 크기에 맞춰 조정하세요) */
+  height: auto;
+  opacity: 0.8; /* 필요시 투명도 조절 */
+}
 
 input[type="file"] {
   position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   opacity: 0;
   cursor: pointer;
 }
@@ -374,7 +419,9 @@ input[type="file"] {
 /* =========================================
    🔘 Buttons (기본)
    ========================================= */
-button, .button-primary, .drop-button {
+button,
+.button-primary,
+.drop-button {
   background: var(--text-main);
   color: var(--surface-color);
   padding: 14px 28px;
@@ -395,7 +442,9 @@ button:hover:not(.nav-button):not(.btn-reset-ghost),
   box-shadow: var(--shadow-hover);
 }
 
-button:active { transform: scale(0.98); }
+button:active {
+  transform: scale(0.98);
+}
 
 #startButton {
   width: 100%;
@@ -479,7 +528,9 @@ button:active { transform: scale(0.98); }
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* =========================================
@@ -491,7 +542,8 @@ button:active { transform: scale(0.98); }
   background: var(--bg-color);
   border-radius: 20px;
   border: 1px solid var(--border-light);
-  transition: background 0.3s ease, border-color 0.3s ease;
+  /* transition: background 0.3s ease, border-color 0.3s ease; */
+  transition: all 0.3s ease;
   text-align: center;
 }
 
@@ -599,7 +651,7 @@ button:active { transform: scale(0.98); }
   font-weight: 600;
   font-size: 0.875rem;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
   cursor: pointer;
 }
 
@@ -784,6 +836,187 @@ button:active { transform: scale(0.98); }
   }
 }
 
+/* 1. PC에서는 모바일 버튼 숨기기 */
+.mobile-toggle-wrapper {
+  display: none;
+}
+
+/* 2. 모바일 화면 설정 (기존 미디어 쿼리 블록 안에 넣어도 됨) */
+@media (max-width: 768px) {
+
+  /* PC 메뉴 숨기기 (기존에 있던 설정) */
+  .header-nav {
+    display: none;
+  }
+
+  /* 모바일 버튼 보이기 */
+  .mobile-toggle-wrapper {
+    display: block;
+    margin-left: auto;
+    /* 오른쪽 정렬 */
+  }
+
+  /* [추가] 모바일 전용 다크모드 버튼 크기 재정의 */
+  .mobile-toggle-wrapper .checkbox.model-1 label {
+    width: 72px;   /* 너비 늘림 (기존 48px) */
+    height: 39px;  /* 높이 늘림 (기존 26px) */
+  }
+
+  /* [추가] 내부 동그라미 크기 재정의 */
+  .mobile-toggle-wrapper .checkbox.model-1 label::before {
+    width: 32px;   /* (기존 20px) */
+    height: 32px;  /* (기존 20px) */
+    font-size: 18px;
+  }
+  
+  /* [추가] 체크되었을 때(다크모드 ON) 동그라미 위치 보정 */
+  /* '30px'은 (동그라미 너비 26px + 여백 4px) 입니다. */
+  .mobile-toggle-wrapper .checkbox.model-1 input[type="checkbox"]:checked+label::before {
+    left: calc(100% - 36px); 
+  }
+}
+
+/* 사이드 버튼 */
+
+/* 기본적으로 햄버거 버튼 오버레이는 숨김 */
+.hamburger-btn,
+.side-menu,
+.menu-overlay {
+  display: none;
+}
+
+
+@media (max-width: 768px) {
+
+  /* 1. 햄버거 버튼 보이기 */
+  .hamburger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    margin-right: 8px;
+    color: var(--text-main);
+    cursor: pointer;
+    border-radius: 8px;
+  }
+
+  .hamburger-btn:hover {
+    background-color: var(--border-light);
+  }
+
+  /* 2. 헤더 정렬 조정 */
+  .header-content {
+    justify-content: flex-start;
+  }
+
+  .logo-section {
+    margin-right: auto;
+  }
+
+  /* 3. 오버레이 스타일 */
+  .menu-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .menu-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* 4. 사이드 메뉴 패널 스타일 */
+  .side-menu {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 180px;
+    height: 100vh;
+    background: var(--surface-color);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+    z-index: 999;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 20px;
+  }
+
+  .side-menu.open {
+    transform: translateX(0);
+  }
+
+  /* 메뉴 내부 요소 스타일 */
+  .side-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-sub);
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+
+  .side-nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .side-nav-item {
+    background: transparent;
+    border: none;
+    text-align: left;
+    font-size: 1.2rem;
+    padding: 24px 24px;
+    color: var(--text-main);
+    border-radius: 12px;
+    transition: background 0.2s;
+    font-weight: 500;
+  }
+
+  .side-nav-item.active {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 700;
+  }
+
+  .side-nav-item:hover:not(.active) {
+    background: var(--border-light);
+  }
+
+  .side-menu-footer {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    color: var(--text-main);
+  }
+}
+
 /* =========================================
    ⚓ Footer
    ========================================= */
@@ -805,7 +1038,9 @@ button:active { transform: scale(0.98); }
   transition: color 0.3s ease;
 }
 
-.app-footer a:hover { text-decoration: underline; }
+.app-footer a:hover {
+  text-decoration: underline;
+}
 
 .footer-links {
   display: flex;
@@ -830,9 +1065,19 @@ button:active { transform: scale(0.98); }
     margin: 20px auto;
   }
 
-  .main-title { font-size: 2rem; }
-  .header-nav { display: none; }
-  button, #startButton { width: 100%; max-width: none; }
+  .main-title {
+    font-size: 2rem;
+  }
+
+  .header-nav {
+    display: none;
+  }
+
+  button,
+  #startButton {
+    width: 100%;
+    max-width: none;
+  }
 
   /* 2열 → 1열 전환 */
   .result-layout {
@@ -852,6 +1097,13 @@ button:active { transform: scale(0.98); }
    ✨ Animation Keyframes
    ========================================= */
 @keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
